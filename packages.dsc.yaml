@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+properties:
+  configurationVersion: 0.2.0
+  resources:
+    
+    # --- CORE GAMING INFRASTRUCTURE ---
+    # Essential for modern gaming on Windows 11 LTSC.
+    # Note: 'Microsoft.XboxApp' requires 'Microsoft.GamingApp' dependencies usually handled by store.
+    
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Xbox App for Game Pass access
+        allowPrerelease: false
+      settings:
+        id: Microsoft.XboxApp
+        source: winget
+        Ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Steam Client
+      settings:
+        id: Valve.Steam
+        source: winget
+        Ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Discord (Messaging)
+      settings:
+        id: Discord.Discord
+        source: winget
+        Ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install NVIDIA GeForce Experience (Optional - remove if AMD)
+      settings:
+        id: Nvidia.GeForceExperience
+        source: winget
+        Ensure: Present
+
+    # --- SYSTEM UTILITIES ---
+    # Quality of life improvements for power users.
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install 7-Zip (Essential Archive Manager)
+      settings:
+        id: 7zip.7zip
+        source: winget
+        Ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install VLC Media Player
+      settings:
+        id: VideoLAN.VLC
+        source: winget
+        Ensure: Present
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install Firefox (Privacy-focused Browser)
+      settings:
+        id: Mozilla.Firefox
+        source: winget
+        Ensure: Present
+
+    # --- SYSTEM CONFIGURATION (DSC) ---
+    # Apply OS-level settings using native DSC resources.
+    
+    # Developer Mode: Often required for sideloading specific tools or homebrew.
+    # Set to 'Absent' for strict security, 'Present' for convenience.
+    - resource: Microsoft.Windows.Developer/DeveloperMode
+      directives:
+        description: Configure Windows Developer Mode state
+        allowPrerelease: true
+      settings:
+        Ensure: Absent 
+
+  configurationModules:
+    - name: Microsoft.WinGet.DSC
+      version: 1.0.0
+    - name: Microsoft.Windows.Developer
+      version: 1.0.0
