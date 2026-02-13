@@ -18,7 +18,7 @@ $WingetUrl       = "https://github.com/microsoft/winget-cli/releases/latest/down
 $VclibsUrl       = "https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx"
 $UiXamlUrl       = "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx"
 # IMPORTANT: Replace this URL with your actual raw YAML config URL
-$DscConfigUrl    = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/packages.dsc.yaml" 
+$DscConfigUrl    = "https://raw.githubusercontent.com/mgwals/ltsc-setup/refs/heads/main/packages.dsc.yaml" 
 $TempDir         = "$env:TEMP\WinGetBootstrap"
 
 # --- HELPER FUNCTIONS ---
