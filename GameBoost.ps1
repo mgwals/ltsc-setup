@@ -299,6 +299,8 @@ function New-GameBoostBackup {
         ActivePowerSchemeGuid = Get-ActivePowerSchemeGuid
         ServiceSnapshots = @(
             Get-ServiceSnapshot -Name "SysMain"
+            Get-ServiceSnapshot -Name "WSearch"
+            Get-ServiceSnapshot -Name "DiagTrack"
         )
         PackageSnapshots = @(
             Get-PackageSnapshots -SelectedProfile $SelectedProfile
@@ -879,6 +881,166 @@ function Get-GameBoostTweaks {
                 "SysMain stopped and set to Manual."
             }
         }
+        [pscustomobject]@{
+            Id = "capture.fullscreen-exclusive"
+            Name = "Prefer exclusive fullscreen"
+            Group = "Latency"
+            Profiles = @($safeProfile, $competitiveProfile)
+            RequiresAdmin = $false
+            RebootRequired = $false
+            RegistryPaths = @("HKCU:\System\GameConfigStore")
+            RegistryValues = @(
+                [pscustomobject]@{ Path = "HKCU:\System\GameConfigStore"; Name = "GameDVR_DXGIHonorFSEWindowsCompatible" }
+                [pscustomobject]@{ Path = "HKCU:\System\GameConfigStore"; Name = "GameDVR_EFSEFeatureFlags" }
+            )
+            Detect = {
+                $value = Get-RegistryValueSafe -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_DXGIHonorFSEWindowsCompatible"
+                if ($value -eq 1) { "Ready" } else { "Will prefer exclusive fullscreen to reduce compositor overhead." }
+            }
+            Apply = {
+                Set-RegistryValueSafe -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_DXGIHonorFSEWindowsCompatible" -Value 1
+                Set-RegistryValueSafe -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_EFSEFeatureFlags" -Value 0
+                "Exclusive fullscreen preferred."
+            }
+        }
+        [pscustomobject]@{
+            Id = "gaming.disable-overlay"
+            Name = "Disable Game Bar overlay"
+            Group = "Latency"
+            Profiles = @($safeProfile, $competitiveProfile)
+            RequiresAdmin = $false
+            RebootRequired = $false
+            RegistryPaths = @("HKCU:\Software\Microsoft\GameBar")
+            RegistryValues = @(
+                [pscustomobject]@{ Path = "HKCU:\Software\Microsoft\GameBar"; Name = "UseNexusForGameBarEnabled" }
+                [pscustomobject]@{ Path = "HKCU:\Software\Microsoft\GameBar"; Name = "ShowStartupPanel" }
+            )
+            Detect = {
+                $value = Get-RegistryValueSafe -Path "HKCU:\Software\Microsoft\GameBar" -Name "UseNexusForGameBarEnabled"
+                if ($value -eq 0) { "Ready" } else { "Will disable Game Bar overlay to reduce rendering overhead." }
+            }
+            Apply = {
+                Set-RegistryValueSafe -Path "HKCU:\Software\Microsoft\GameBar" -Name "UseNexusForGameBarEnabled" -Value 0
+                Set-RegistryValueSafe -Path "HKCU:\Software\Microsoft\GameBar" -Name "ShowStartupPanel" -Value 0
+                "Game Bar overlay disabled."
+            }
+        }
+        [pscustomobject]@{
+            Id = "power.disable-throttling"
+            Name = "Disable power throttling"
+            Group = "Power"
+            Profiles = @($safeProfile, $competitiveProfile)
+            RequiresAdmin = $true
+            RebootRequired = $false
+            RegistryPaths = @("HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling")
+            RegistryValues = @(
+                [pscustomobject]@{ Path = "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling"; Name = "PowerThrottlingOff" }
+            )
+            Detect = {
+                $value = Get-RegistryValueSafe -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling" -Name "PowerThrottlingOff"
+                if ($value -eq 1) { "Ready" } else { "Will disable power throttling to maintain peak CPU performance." }
+            }
+            Apply = {
+                Set-RegistryValueSafe -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling" -Name "PowerThrottlingOff" -Value 1
+                "Power throttling disabled."
+            }
+        }
+        [pscustomobject]@{
+            Id = "visual.reduce-effects"
+            Name = "Reduce visual effects"
+            Group = "Background Noise"
+            Profiles = @($competitiveProfile)
+            RequiresAdmin = $false
+            RebootRequired = $false
+            RegistryPaths = @(
+                "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
+                "HKCU:\Software\Microsoft\Windows\DWM",
+                "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced",
+                "HKCU:\Control Panel\Desktop\WindowMetrics"
+            )
+            RegistryValues = @(
+                [pscustomobject]@{ Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"; Name = "EnableTransparency" }
+                [pscustomobject]@{ Path = "HKCU:\Software\Microsoft\Windows\DWM"; Name = "EnableAeroPeek" }
+                [pscustomobject]@{ Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name = "TaskbarAnimations" }
+                [pscustomobject]@{ Path = "HKCU:\Control Panel\Desktop\WindowMetrics"; Name = "MinAnimate" }
+            )
+            Detect = {
+                $transparency = Get-RegistryValueSafe -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "EnableTransparency"
+                if ($transparency -eq 0) { "Ready" } else { "Competitive mode will reduce transparency and animations to free GPU cycles." }
+            }
+            Apply = {
+                Set-RegistryValueSafe -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "EnableTransparency" -Value 0
+                Set-RegistryValueSafe -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "EnableAeroPeek" -Value 0
+                Set-RegistryValueSafe -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAnimations" -Value 0
+                Set-RegistryValueSafe -Path "HKCU:\Control Panel\Desktop\WindowMetrics" -Name "MinAnimate" -Value "0" -Type String
+                "Visual effects reduced."
+            }
+        }
+        [pscustomobject]@{
+            Id = "services.wsearch"
+            Name = "Windows Search service"
+            Group = "Competitive"
+            Profiles = @($competitiveProfile)
+            RequiresAdmin = $true
+            RebootRequired = $false
+            RegistryPaths = @()
+            Detect = {
+                $service = Get-Service -Name "WSearch" -ErrorAction SilentlyContinue
+                if ($null -eq $service) { "Windows Search not present." } else { "Competitive mode will stop Windows Search to reduce disk I/O spikes." }
+            }
+            Apply = {
+                $service = Get-Service -Name "WSearch" -ErrorAction SilentlyContinue
+                if ($null -eq $service) { return "Windows Search not present." }
+                Stop-Service -Name "WSearch" -Force -ErrorAction SilentlyContinue
+                Set-Service -Name "WSearch" -StartupType Manual
+                "Windows Search stopped and set to Manual."
+            }
+        }
+        [pscustomobject]@{
+            Id = "services.diagtrack"
+            Name = "Diagnostic tracking service"
+            Group = "Competitive"
+            Profiles = @($competitiveProfile)
+            RequiresAdmin = $true
+            RebootRequired = $false
+            RegistryPaths = @()
+            Detect = {
+                $service = Get-Service -Name "DiagTrack" -ErrorAction SilentlyContinue
+                if ($null -eq $service) { "DiagTrack not present." } else { "Competitive mode will stop telemetry to reduce background CPU usage." }
+            }
+            Apply = {
+                $service = Get-Service -Name "DiagTrack" -ErrorAction SilentlyContinue
+                if ($null -eq $service) { return "DiagTrack not present." }
+                Stop-Service -Name "DiagTrack" -Force -ErrorAction SilentlyContinue
+                Set-Service -Name "DiagTrack" -StartupType Manual
+                "Diagnostic tracking stopped and set to Manual."
+            }
+        }
+        [pscustomobject]@{
+            Id = "notifications.suppress-toasts"
+            Name = "Suppress notification toasts"
+            Group = "Background Noise"
+            Profiles = @($competitiveProfile)
+            RequiresAdmin = $false
+            RebootRequired = $false
+            RegistryPaths = @(
+                "HKCU:\Software\Microsoft\Windows\CurrentVersion\PushNotifications",
+                "HKCU:\Software\Policies\Microsoft\Windows\Explorer"
+            )
+            RegistryValues = @(
+                [pscustomobject]@{ Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\PushNotifications"; Name = "ToastEnabled" }
+                [pscustomobject]@{ Path = "HKCU:\Software\Policies\Microsoft\Windows\Explorer"; Name = "DisableNotificationCenter" }
+            )
+            Detect = {
+                $toasts = Get-RegistryValueSafe -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\PushNotifications" -Name "ToastEnabled"
+                if ($toasts -eq 0) { "Ready" } else { "Competitive mode will suppress notification popups during gaming." }
+            }
+            Apply = {
+                Set-RegistryValueSafe -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\PushNotifications" -Name "ToastEnabled" -Value 0
+                Set-RegistryValueSafe -Path "HKCU:\Software\Policies\Microsoft\Windows\Explorer" -Name "DisableNotificationCenter" -Value 1
+                "Notification toasts suppressed."
+            }
+        }
     )
 }
 
@@ -1238,10 +1400,16 @@ function Show-GameBoostUi {
                 <TextBlock Name="GpuStatus" Text="Waiting" FontSize="20" FontWeight="Bold"/>
               </StackPanel>
             </Border>
-            <Border Background="#3B0764" CornerRadius="10" Padding="14">
+            <Border Background="#3B0764" CornerRadius="10" Padding="14" Margin="0,0,12,0">
               <StackPanel>
                 <TextBlock Text="Noise" Foreground="#D8B4FE"/>
                 <TextBlock Name="NoiseStatus" Text="Waiting" FontSize="20" FontWeight="Bold"/>
+              </StackPanel>
+            </Border>
+            <Border Background="#1E3A5F" CornerRadius="10" Padding="14">
+              <StackPanel>
+                <TextBlock Text="Latency" Foreground="#7DD3FC"/>
+                <TextBlock Name="LatencyStatus" Text="Waiting" FontSize="20" FontWeight="Bold"/>
               </StackPanel>
             </Border>
           </StackPanel>
@@ -1268,6 +1436,7 @@ function Show-GameBoostUi {
     $powerStatus = $window.FindName("PowerStatus")
     $gpuStatus = $window.FindName("GpuStatus")
     $noiseStatus = $window.FindName("NoiseStatus")
+    $latencyStatus = $window.FindName("LatencyStatus")
 
     $renderReport = {
         param($report)
@@ -1295,6 +1464,9 @@ function Show-GameBoostUi {
         $powerStatus.Text = if ($powerItem) { $powerItem.Status } else { "Skipped" }
         $gpuStatus.Text = if ($gpuItem) { $gpuItem.Status } else { "Skipped" }
         $noiseStatus.Text = if ($noiseItem) { $noiseItem.Status } else { "Skipped" }
+
+        $latencyItem = $report.Results | Where-Object { $_.Group -eq "Latency" } | Select-Object -First 1
+        $latencyStatus.Text = if ($latencyItem) { $latencyItem.Status } else { "Skipped" }
     }
 
     $getProfile = {

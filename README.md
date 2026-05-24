@@ -14,7 +14,7 @@ Gaming optimization for Windows 11
 [ Competitive      ]      Optimize Now
                          Restore Backup
 
-Power: Planned    GPU: Planned    Noise: Planned
+Power: Planned    GPU: Planned    Noise: Planned    Latency: Planned
 ```
 
 The UI is intentionally simple: choose one profile, analyze, optimize, restore if needed. No wall of mystery checkboxes.
@@ -82,9 +82,16 @@ Reports are written to:
 | Power plan | Yes | Yes | Activates Ultimate Performance when available, with High Performance fallback. |
 | Multimedia scheduling | Yes | Yes | Tunes the Windows Games MMCSS profile. Reboot recommended. |
 | HAGS | Yes | Yes | Requests hardware-accelerated GPU scheduling. Driver support still decides behavior. |
+| Exclusive fullscreen | Yes | Yes | Prefers exclusive fullscreen mode to bypass the DWM compositor for lower latency. |
+| Game Bar overlay | Yes | Yes | Disables the Game Bar overlay to eliminate micro-stutters from overlay rendering. |
+| Power throttling | Yes | Yes | Disables CPU power throttling so game processes always run at peak frequency. |
 | Packages | Yes | Yes | Installs gaming essentials with WinGet when available. Xbox/Game Pass dependencies remain managed by Microsoft Store/Xbox App. |
 | Consumer suggestions | No | Yes | Reduces Windows suggestions and widget noise for the current user. |
+| Visual effects | No | Yes | Disables transparency, animations and Aero Peek to free GPU cycles for games. |
 | SysMain | No | Yes | Stops SysMain and sets it to Manual. Useful on some gaming rigs, not universal. |
+| Windows Search | No | Yes | Stops WSearch and sets it to Manual to reduce disk I/O spikes during gaming. |
+| Diagnostic tracking | No | Yes | Stops DiagTrack and sets it to Manual to reduce background CPU usage. |
+| Notification toasts | No | Yes | Suppresses toast notifications that can interrupt or stutter fullscreen games. |
 
 ## What It Does Not Do
 
