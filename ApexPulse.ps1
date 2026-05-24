@@ -364,8 +364,11 @@ function Restore-ApexPulseBackup {
 
         $regFile = Join-Path $Path $export.File
         try {
+            $prevEAP = $ErrorActionPreference
+            $ErrorActionPreference = "SilentlyContinue"
             $importOutput = & reg.exe import $regFile 2>&1
             $importExitCode = $LASTEXITCODE
+            $ErrorActionPreference = $prevEAP
             if ($importExitCode -ne 0) {
                 throw "reg import failed with exit code $importExitCode. $($importOutput -join ' ')"
             }
