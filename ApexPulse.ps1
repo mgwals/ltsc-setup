@@ -270,8 +270,14 @@ function New-ApexPulseBackup {
         $cliPath = ConvertTo-RegistryCliPath -Path $path
 
         try {
-            $exportOutput = & reg.exe export $cliPath $exportPath /y 2>&1
-            $exportExitCode = $LASTEXITCODE
+            $prevEAP = $ErrorActionPreference
+            try {
+                $ErrorActionPreference = "SilentlyContinue"
+                $exportOutput = & reg.exe export $cliPath $exportPath /y 2>&1
+                $exportExitCode = $LASTEXITCODE
+            } finally {
+                $ErrorActionPreference = $prevEAP
+            }
             if ($exportExitCode -ne 0) {
                 throw "reg export failed with exit code $exportExitCode. $($exportOutput -join ' ')"
             }
@@ -365,10 +371,13 @@ function Restore-ApexPulseBackup {
         $regFile = Join-Path $Path $export.File
         try {
             $prevEAP = $ErrorActionPreference
-            $ErrorActionPreference = "SilentlyContinue"
-            $importOutput = & reg.exe import $regFile 2>&1
-            $importExitCode = $LASTEXITCODE
-            $ErrorActionPreference = $prevEAP
+            try {
+                $ErrorActionPreference = "SilentlyContinue"
+                $importOutput = & reg.exe import $regFile 2>&1
+                $importExitCode = $LASTEXITCODE
+            } finally {
+                $ErrorActionPreference = $prevEAP
+            }
             if ($importExitCode -ne 0) {
                 throw "reg import failed with exit code $importExitCode. $($importOutput -join ' ')"
             }
@@ -1167,7 +1176,7 @@ function Get-ApexPulseTweaks {
             Name = "Disable Cortana and cloud search"
             Group = "Privacy"
             Profiles = @($competitiveProfile)
-            RequiresAdmin = $false
+            RequiresAdmin = $true
             RebootRequired = $false
             RegistryPaths = @(
                 "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search",
@@ -2101,18 +2110,41 @@ function Show-ApexPulseUi {
             if ($backup) { $lines += "Backup: $backup" }
             $lines += ""
 
+            $privResults = @()
             foreach ($tweak in $selectedTweaks) {
                 try {
                     if ($tweak.RequiresAdmin -and -not $admin) {
                         $lines += "[NeedsAdmin] $($tweak.Name) - Requires elevation."
+                        $privResults += [pscustomobject]@{ Id = $tweak.Id; Name = $tweak.Name; Group = $tweak.Group; Status = "NeedsAdmin"; Detail = "Requires elevation."; RebootRequired = $false }
                         continue
                     }
                     $detail = & $tweak.Apply
                     $lines += "[Applied] $($tweak.Name) - $detail"
+                    $privResults += [pscustomobject]@{ Id = $tweak.Id; Name = $tweak.Name; Group = $tweak.Group; Status = "Applied"; Detail = $detail; RebootRequired = $false }
                 } catch {
                     $lines += "[Failed] $($tweak.Name) - $($_.Exception.Message)"
+                    $privResults += [pscustomobject]@{ Id = $tweak.Id; Name = $tweak.Name; Group = $tweak.Group; Status = "Failed"; Detail = $_.Exception.Message; RebootRequired = $false }
                 }
             }
+
+            $privReport = [pscustomobject]@{
+                Product = $script:ProductName
+                Version = $script:ProductVersion
+                Profile = "Privacy"
+                Mode = "Apply"
+                BackupPath = $backup
+                Computer = Get-ApexPulseComputerState
+                Results = $privResults
+                RebootRequired = $false
+            }
+            $privStamp = Get-Date -Format "yyyyMMdd-HHmmss"
+            $privJsonPath = Join-Path $script:ReportRoot ("report-{0}-Privacy.json" -f $privStamp)
+            $privReport | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $privJsonPath -Encoding UTF8
+            $privHtmlPath = [IO.Path]::ChangeExtension($privJsonPath, ".html")
+            New-ApexPulseHtmlReport -Report $privReport -Path $privHtmlPath
+            $lines += ""
+            $lines += "Report: $privJsonPath"
+            $lines += "HTML Report: $privHtmlPath"
 
             $privacyOutputBox.Text = $lines -join [Environment]::NewLine
         } catch {
