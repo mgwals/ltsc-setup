@@ -271,10 +271,13 @@ function New-ApexPulseBackup {
 
         try {
             $prevEAP = $ErrorActionPreference
-            $ErrorActionPreference = "SilentlyContinue"
-            $exportOutput = & reg.exe export $cliPath $exportPath /y 2>&1
-            $exportExitCode = $LASTEXITCODE
-            $ErrorActionPreference = $prevEAP
+            try {
+                $ErrorActionPreference = "SilentlyContinue"
+                $exportOutput = & reg.exe export $cliPath $exportPath /y 2>&1
+                $exportExitCode = $LASTEXITCODE
+            } finally {
+                $ErrorActionPreference = $prevEAP
+            }
             if ($exportExitCode -ne 0) {
                 throw "reg export failed with exit code $exportExitCode. $($exportOutput -join ' ')"
             }
@@ -368,10 +371,13 @@ function Restore-ApexPulseBackup {
         $regFile = Join-Path $Path $export.File
         try {
             $prevEAP = $ErrorActionPreference
-            $ErrorActionPreference = "SilentlyContinue"
-            $importOutput = & reg.exe import $regFile 2>&1
-            $importExitCode = $LASTEXITCODE
-            $ErrorActionPreference = $prevEAP
+            try {
+                $ErrorActionPreference = "SilentlyContinue"
+                $importOutput = & reg.exe import $regFile 2>&1
+                $importExitCode = $LASTEXITCODE
+            } finally {
+                $ErrorActionPreference = $prevEAP
+            }
             if ($importExitCode -ne 0) {
                 throw "reg import failed with exit code $importExitCode. $($importOutput -join ' ')"
             }
