@@ -2886,7 +2886,9 @@ function Show-ApexPulseUi {
         $script:NotifyTimer.Start()
     }
 
-    # --- Card entry animation: opacity 0->1 + translateY 8->0, with stagger ---
+    # --- Card entry animation: opacity 0->1 + translateY 8->0, with 50ms stagger ---
+    # Uses DoubleAnimation.BeginTime for the stagger so we avoid PowerShell event-handler
+    # closure issues that can occur when a DispatcherTimer Tick fires asynchronously.
     $animateCardsIn = {
         $safeCardContent.Opacity = 0
         $safeCardTranslate.Y = 8
@@ -2894,26 +2896,24 @@ function Show-ApexPulseUi {
         $competitiveCardTranslate.Y = 8
 
         $easeCubic = New-Object System.Windows.Media.Animation.CubicEase -Property @{ EasingMode = [System.Windows.Media.Animation.EasingMode]::EaseOut }
+        $dur = [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(220))
 
-        $fadeSafe = New-Object System.Windows.Media.Animation.DoubleAnimation(0.0, 1.0, [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(220)))
+        $fadeSafe = New-Object System.Windows.Media.Animation.DoubleAnimation(0.0, 1.0, $dur)
         $fadeSafe.EasingFunction = $easeCubic
-        $slideSafe = New-Object System.Windows.Media.Animation.DoubleAnimation(8.0, 0.0, [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(220)))
+        $slideSafe = New-Object System.Windows.Media.Animation.DoubleAnimation(8.0, 0.0, $dur)
         $slideSafe.EasingFunction = $easeCubic
         $safeCardContent.BeginAnimation([System.Windows.Controls.StackPanel]::OpacityProperty, $fadeSafe)
         $safeCardTranslate.BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, $slideSafe)
 
-        $compTimer = New-Object System.Windows.Threading.DispatcherTimer
-        $compTimer.Interval = [TimeSpan]::FromMilliseconds(50)
-        $compTimer.Add_Tick({
-            $compTimer.Stop()
-            $fadeC = New-Object System.Windows.Media.Animation.DoubleAnimation(0.0, 1.0, [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(220)))
-            $fadeC.EasingFunction = New-Object System.Windows.Media.Animation.CubicEase -Property @{ EasingMode = [System.Windows.Media.Animation.EasingMode]::EaseOut }
-            $slideC = New-Object System.Windows.Media.Animation.DoubleAnimation(8.0, 0.0, [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(220)))
-            $slideC.EasingFunction = New-Object System.Windows.Media.Animation.CubicEase -Property @{ EasingMode = [System.Windows.Media.Animation.EasingMode]::EaseOut }
-            $competitiveCardContent.BeginAnimation([System.Windows.Controls.StackPanel]::OpacityProperty, $fadeC)
-            $competitiveCardTranslate.BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, $slideC)
-        })
-        $compTimer.Start()
+        $stagger = [TimeSpan]::FromMilliseconds(50)
+        $fadeComp = New-Object System.Windows.Media.Animation.DoubleAnimation(0.0, 1.0, $dur)
+        $fadeComp.EasingFunction = $easeCubic
+        $fadeComp.BeginTime = $stagger
+        $slideComp = New-Object System.Windows.Media.Animation.DoubleAnimation(8.0, 0.0, $dur)
+        $slideComp.EasingFunction = $easeCubic
+        $slideComp.BeginTime = $stagger
+        $competitiveCardContent.BeginAnimation([System.Windows.Controls.StackPanel]::OpacityProperty, $fadeComp)
+        $competitiveCardTranslate.BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, $slideComp)
     }
 
     # --- Navigation ---
