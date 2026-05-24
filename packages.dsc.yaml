@@ -1,8 +1,8 @@
 # yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 #
-# Win11 GameBoost package baseline.
+# ApexPulse 11 package baseline.
 # This file is intentionally package-only. OS tweaks, backup and restore live in
-# GameBoost.ps1 because they need detection, reporting and rollback.
+# ApexPulse.ps1 because they need detection, reporting and rollback.
 properties:
   configurationVersion: 0.2.0
   resources:

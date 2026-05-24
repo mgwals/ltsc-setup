@@ -1,0 +1,72 @@
+name: Lint & Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  lint:
+    name: PSScriptAnalyzer Lint
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $warnings = Get-ChildItem -Path . -Filter *.ps1 -Recurse |
+            ForEach-Object { Invoke-ScriptAnalyzer -Path $_.FullName -Severity Warning }
+          if ($warnings) {
+            Write-Host "::warning::PSScriptAnalyzer warnings (non-blocking):"
+            $warnings | Format-Table RuleName, Severity, ScriptName, Line, Message -AutoSize
+          }
+
+          $errors = Get-ChildItem -Path . -Filter *.ps1 -Recurse |
+            ForEach-Object { Invoke-ScriptAnalyzer -Path $_.FullName -Severity Error }
+          if ($errors) {
+            $errors | Format-Table -AutoSize
+            throw "PSScriptAnalyzer found $($errors.Count) error(s)."
+          }
+          Write-Host "All PowerShell scripts passed linting."
+
+  release:
+    name: Build Release
+    needs: lint
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build release zip
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $zipName = "ApexPulse11-$tag.zip"
+          $files = @(
+            "ApexPulse.ps1",
+            "GameBoost.ps1",
+            "setup.ps1",
+            "packages.dsc.yaml",
+            "LICENSE",
+            "README.md"
+          )
+          Compress-Archive -Path $files -DestinationPath $zipName -Force
+          Write-Host "Created $zipName"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ApexPulse11-*.zip
+          generate_release_notes: true
