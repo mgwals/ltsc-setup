@@ -1667,7 +1667,7 @@ function Show-ApexPulseUi {
     Add-Type -AssemblyName PresentationCore
     Add-Type -AssemblyName WindowsBase
 
-    # UI v2 â€” Dark Precision redesign
+    # UI v2 — Dark Precision redesign
     [xml]$xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -2726,7 +2726,7 @@ function Show-ApexPulseUi {
           <TextBlock Grid.Column="0" x:Name="StatusText" Text="Ready." Foreground="{StaticResource TextMuted}" FontSize="11" VerticalAlignment="Center"/>
           <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
             <TextBlock Text="LAST RUN" Style="{StaticResource SectionLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-            <TextBlock x:Name="LastRunText" Text="â€”" Foreground="{StaticResource TextPrimary}" FontFamily="Cascadia Mono, Consolas" FontSize="11" VerticalAlignment="Center"/>
+            <TextBlock x:Name="LastRunText" Text="—" Foreground="{StaticResource TextPrimary}" FontFamily="Cascadia Mono, Consolas" FontSize="11" VerticalAlignment="Center"/>
           </StackPanel>
         </Grid>
       </Border>
