@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     ApexPulse 11 optimizes Windows 11 for gaming with profiles, privacy shield, reports and rollback.
 
@@ -1667,241 +1667,1071 @@ function Show-ApexPulseUi {
     Add-Type -AssemblyName PresentationCore
     Add-Type -AssemblyName WindowsBase
 
+    # UI v2 â€” Dark Precision redesign
     [xml]$xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="ApexPulse 11" Height="800" Width="1280" WindowStartupLocation="CenterScreen"
-        Background="#0B0E17" Foreground="#F8FAFC" ResizeMode="CanResize" MinWidth="960" MinHeight="600">
+        Title="ApexPulse 11"
+        Width="1040" Height="640"
+        MinWidth="860" MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        Background="#0d0f10"
+        Foreground="#e8eaed"
+        FontFamily="Segoe UI Variable Text, Segoe UI"
+        FontSize="13"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType">
+  <WindowChrome.WindowChrome>
+    <WindowChrome CaptionHeight="34"
+                  ResizeBorderThickness="6"
+                  GlassFrameThickness="0"
+                  UseAeroCaptionButtons="False"
+                  CornerRadius="0"/>
+  </WindowChrome.WindowChrome>
   <Window.Resources>
-    <Style TargetType="Button" x:Key="NavBtn">
+    <!-- Color palette -->
+    <SolidColorBrush x:Key="BgPrimary" Color="#0d0f10"/>
+    <SolidColorBrush x:Key="BgSurface" Color="#141618"/>
+    <SolidColorBrush x:Key="BgElevated" Color="#1c1e21"/>
+    <SolidColorBrush x:Key="BgHover" Color="#23262a"/>
+    <SolidColorBrush x:Key="AccentCyan" Color="#00d4ff"/>
+    <SolidColorBrush x:Key="AccentCyanSoft" Color="#1a00d4ff"/>
+    <SolidColorBrush x:Key="AccentGreen" Color="#a3e635"/>
+    <SolidColorBrush x:Key="AccentGreenSoft" Color="#1aa3e635"/>
+    <SolidColorBrush x:Key="DangerRed" Color="#ff4757"/>
+    <SolidColorBrush x:Key="DangerRedSoft" Color="#1aff4757"/>
+    <SolidColorBrush x:Key="TextPrimary" Color="#e8eaed"/>
+    <SolidColorBrush x:Key="TextMuted" Color="#7a7e82"/>
+    <SolidColorBrush x:Key="TextSubtle" Color="#5b5f63"/>
+    <SolidColorBrush x:Key="DividerBrush" Color="#2a2d31"/>
+    <SolidColorBrush x:Key="AdminAmber" Color="#f59e0b"/>
+    <SolidColorBrush x:Key="AdminAmberSoft" Color="#26f59e0b"/>
+
+    <CubicEase x:Key="EaseOutCubic" EasingMode="EaseOut"/>
+
+    <Style TargetType="TextBlock">
+      <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+      <Setter Property="SnapsToDevicePixels" Value="True"/>
+    </Style>
+
+    <Style TargetType="ScrollBar">
       <Setter Property="Background" Value="Transparent"/>
-      <Setter Property="Foreground" Value="#94A3B8"/>
-      <Setter Property="FontSize" Value="14"/>
-      <Setter Property="FontWeight" Value="SemiBold"/>
-      <Setter Property="Padding" Value="14,11"/>
+      <Setter Property="Foreground" Value="#2a2d31"/>
+      <Setter Property="Width" Value="8"/>
+    </Style>
+
+    <!-- Window control button (min/max) -->
+    <Style x:Key="WindowControlButtonStyle" TargetType="Button">
+      <Setter Property="Width" Value="46"/>
+      <Setter Property="Height" Value="34"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource TextMuted}"/>
       <Setter Property="BorderThickness" Value="0"/>
-      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+      <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+      <Setter Property="FontSize" Value="10"/>
       <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="bg" Background="{TemplateBinding Background}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="bg" Property="Background" Value="#23262a"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="CloseControlButtonStyle" TargetType="Button">
+      <Setter Property="Width" Value="46"/>
+      <Setter Property="Height" Value="34"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource TextMuted}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+      <Setter Property="FontSize" Value="10"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="bg" Background="{TemplateBinding Background}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="bg" Property="Background" Value="#ff4757"/>
+                <Setter Property="Foreground" Value="White"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Sidebar nav radio -->
+    <Style x:Key="NavRadio" TargetType="RadioButton">
+      <Setter Property="Foreground" Value="{StaticResource TextMuted}"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="FontWeight" Value="Medium"/>
+      <Setter Property="Padding" Value="14,9"/>
       <Setter Property="Margin" Value="0,2"/>
-    </Style>
-    <Style TargetType="Button" x:Key="ActionBtn">
-      <Setter Property="Background" Value="#22D3EE"/>
-      <Setter Property="Foreground" Value="#07111F"/>
-      <Setter Property="FontWeight" Value="Bold"/>
-      <Setter Property="FontSize" Value="14"/>
-      <Setter Property="Padding" Value="20,12"/>
-      <Setter Property="BorderThickness" Value="0"/>
-      <Setter Property="Margin" Value="0,0,0,10"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
       <Setter Property="Cursor" Value="Hand"/>
-      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="SnapsToDevicePixels" Value="True"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="RadioButton">
+            <Grid>
+              <Border x:Name="bgRoot" Background="{TemplateBinding Background}" CornerRadius="6"/>
+              <Rectangle x:Name="accent" Width="3" Height="20" HorizontalAlignment="Left" Fill="Transparent" RadiusX="1.5" RadiusY="1.5" Margin="0,0,0,0"/>
+              <ContentPresenter Margin="{TemplateBinding Padding}" VerticalAlignment="Center"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="bgRoot" Property="Background" Value="#1c1e21"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+              </Trigger>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="bgRoot" Property="Background" Value="{StaticResource AccentCyanSoft}"/>
+                <Setter TargetName="accent" Property="Fill" Value="{StaticResource AccentCyan}"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
     </Style>
-    <Style TargetType="RadioButton">
-      <Setter Property="Foreground" Value="#E2E8F0"/>
-      <Setter Property="FontSize" Value="15"/>
-      <Setter Property="Margin" Value="0,8,0,8"/>
+
+    <!-- Primary cyan button -->
+    <Style x:Key="PrimaryButton" TargetType="Button">
+      <Setter Property="Background" Value="{StaticResource AccentCyan}"/>
+      <Setter Property="Foreground" Value="#062028"/>
+      <Setter Property="FontFamily" Value="Segoe UI Variable Display, Segoe UI"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Padding" Value="18,9"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="6" RenderTransformOrigin="0.5,0.5">
+              <Border.RenderTransform>
+                <ScaleTransform x:Name="st" ScaleX="1" ScaleY="1"/>
+              </Border.RenderTransform>
+              <Border.Effect>
+                <DropShadowEffect Color="#00d4ff" ShadowDepth="0" BlurRadius="14" Opacity="0.30"/>
+              </Border.Effect>
+              <Grid>
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                <Border x:Name="overlay" Background="White" Opacity="0" CornerRadius="6" IsHitTestVisible="False"/>
+              </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="overlay" Property="Opacity" Value="0.06"/>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Trigger.EnterActions>
+                  <BeginStoryboard>
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleX" To="0.97" Duration="0:0:0.08"/>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleY" To="0.97" Duration="0:0:0.08"/>
+                    </Storyboard>
+                  </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                  <BeginStoryboard>
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.12"/>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.12"/>
+                    </Storyboard>
+                  </BeginStoryboard>
+                </Trigger.ExitActions>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.5"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
     </Style>
-    <Style TargetType="CheckBox">
-      <Setter Property="Foreground" Value="#E2E8F0"/>
-      <Setter Property="FontSize" Value="14"/>
-      <Setter Property="Margin" Value="0,6,0,6"/>
+
+    <!-- Safe (green) variant -->
+    <Style x:Key="SafeApplyButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+      <Setter Property="Background" Value="{StaticResource AccentGreen}"/>
+      <Setter Property="Foreground" Value="#1a2308"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="6" RenderTransformOrigin="0.5,0.5">
+              <Border.RenderTransform>
+                <ScaleTransform x:Name="st" ScaleX="1" ScaleY="1"/>
+              </Border.RenderTransform>
+              <Border.Effect>
+                <DropShadowEffect Color="#a3e635" ShadowDepth="0" BlurRadius="14" Opacity="0.30"/>
+              </Border.Effect>
+              <Grid>
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                <Border x:Name="overlay" Background="White" Opacity="0" CornerRadius="6" IsHitTestVisible="False"/>
+              </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="overlay" Property="Opacity" Value="0.06"/>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Trigger.EnterActions>
+                  <BeginStoryboard>
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleX" To="0.97" Duration="0:0:0.08"/>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleY" To="0.97" Duration="0:0:0.08"/>
+                    </Storyboard>
+                  </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                  <BeginStoryboard>
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.12"/>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.12"/>
+                    </Storyboard>
+                  </BeginStoryboard>
+                </Trigger.ExitActions>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.5"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Danger button -->
+    <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+      <Setter Property="Background" Value="{StaticResource DangerRed}"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="6" RenderTransformOrigin="0.5,0.5">
+              <Border.RenderTransform>
+                <ScaleTransform x:Name="st" ScaleX="1" ScaleY="1"/>
+              </Border.RenderTransform>
+              <Border.Effect>
+                <DropShadowEffect Color="#ff4757" ShadowDepth="0" BlurRadius="12" Opacity="0.30"/>
+              </Border.Effect>
+              <Grid>
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                <Border x:Name="overlay" Background="White" Opacity="0" CornerRadius="6" IsHitTestVisible="False"/>
+              </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="overlay" Property="Opacity" Value="0.08"/>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Trigger.EnterActions>
+                  <BeginStoryboard>
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleX" To="0.97" Duration="0:0:0.08"/>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleY" To="0.97" Duration="0:0:0.08"/>
+                    </Storyboard>
+                  </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                  <BeginStoryboard>
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.12"/>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.12"/>
+                    </Storyboard>
+                  </BeginStoryboard>
+                </Trigger.ExitActions>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.5"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Outline / secondary button -->
+    <Style x:Key="SecondaryButton" TargetType="Button">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+      <Setter Property="FontFamily" Value="Segoe UI Variable Display, Segoe UI"/>
+      <Setter Property="FontWeight" Value="Medium"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Padding" Value="14,8"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="6" BorderBrush="{StaticResource DividerBrush}" BorderThickness="1" RenderTransformOrigin="0.5,0.5">
+              <Border.RenderTransform>
+                <ScaleTransform x:Name="st" ScaleX="1" ScaleY="1"/>
+              </Border.RenderTransform>
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="bg" Property="Background" Value="{StaticResource BgElevated}"/>
+                <Setter TargetName="bg" Property="BorderBrush" Value="{StaticResource AccentCyan}"/>
+                <Setter Property="Foreground" Value="{StaticResource AccentCyan}"/>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Trigger.EnterActions>
+                  <BeginStoryboard>
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleX" To="0.97" Duration="0:0:0.08"/>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleY" To="0.97" Duration="0:0:0.08"/>
+                    </Storyboard>
+                  </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                  <BeginStoryboard>
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.12"/>
+                      <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.12"/>
+                    </Storyboard>
+                  </BeginStoryboard>
+                </Trigger.ExitActions>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.5"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Profile card (RadioButton styled as full card) -->
+    <Style x:Key="ProfileCard" TargetType="RadioButton">
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+      <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+      <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="RadioButton">
+            <Border x:Name="card" Background="{StaticResource BgSurface}" CornerRadius="8" BorderBrush="{StaticResource DividerBrush}" BorderThickness="1" Padding="22">
+              <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="card" Property="Background" Value="{StaticResource BgElevated}"/>
+                <Setter TargetName="card" Property="BorderBrush" Value="#3a3d42"/>
+              </Trigger>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="card" Property="BorderBrush" Value="{StaticResource AccentCyan}"/>
+                <Setter TargetName="card" Property="BorderThickness" Value="1.5"/>
+                <Setter TargetName="card" Property="Background" Value="{StaticResource BgElevated}"/>
+                <Setter TargetName="card" Property="Effect">
+                  <Setter.Value>
+                    <DropShadowEffect Color="#00d4ff" ShadowDepth="0" BlurRadius="24" Opacity="0.35"/>
+                  </Setter.Value>
+                </Setter>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Pill toggle (privacy switches) -->
+    <Style x:Key="PillToggle" TargetType="ToggleButton">
+      <Setter Property="Width" Value="44"/>
+      <Setter Property="Height" Value="24"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Background" Value="#2a2d31"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ToggleButton">
+            <Border x:Name="track" Background="{TemplateBinding Background}" CornerRadius="12">
+              <Grid>
+                <Ellipse x:Name="thumb" Width="18" Height="18" Fill="#7a7e82" HorizontalAlignment="Left" Margin="3,0,0,0"/>
+              </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="track" Property="Background" Value="{StaticResource AccentCyan}"/>
+                <Setter TargetName="thumb" Property="Fill" Value="White"/>
+                <Setter TargetName="thumb" Property="HorizontalAlignment" Value="Right"/>
+                <Setter TargetName="thumb" Property="Margin" Value="0,0,3,0"/>
+                <Setter TargetName="track" Property="Effect">
+                  <Setter.Value>
+                    <DropShadowEffect Color="#00d4ff" ShadowDepth="0" BlurRadius="10" Opacity="0.45"/>
+                  </Setter.Value>
+                </Setter>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Console-style read-only TextBox -->
+    <Style x:Key="ConsoleTextBox" TargetType="TextBox">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="FontFamily" Value="Cascadia Mono, Consolas"/>
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+      <Setter Property="IsReadOnly" Value="True"/>
+      <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+      <Setter Property="Padding" Value="14"/>
+      <Setter Property="CaretBrush" Value="{StaticResource AccentCyan}"/>
+    </Style>
+
+    <!-- Section pill label -->
+    <Style x:Key="SectionLabel" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="9"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Foreground" Value="{StaticResource TextSubtle}"/>
+    </Style>
+
+    <!-- DataGrid -->
+    <Style TargetType="DataGrid">
+      <Setter Property="Background" Value="{StaticResource BgSurface}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="GridLinesVisibility" Value="None"/>
+      <Setter Property="HeadersVisibility" Value="Column"/>
+      <Setter Property="AutoGenerateColumns" Value="False"/>
+      <Setter Property="CanUserAddRows" Value="False"/>
+      <Setter Property="CanUserDeleteRows" Value="False"/>
+      <Setter Property="CanUserResizeRows" Value="False"/>
+      <Setter Property="CanUserSortColumns" Value="False"/>
+      <Setter Property="RowBackground" Value="#141618"/>
+      <Setter Property="AlternatingRowBackground" Value="#1c1e21"/>
+      <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+      <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+      <Setter Property="SelectionMode" Value="Single"/>
+      <Setter Property="SelectionUnit" Value="FullRow"/>
+      <Setter Property="IsReadOnly" Value="True"/>
+      <Setter Property="ColumnHeaderHeight" Value="32"/>
+      <Setter Property="RowHeight" Value="42"/>
+    </Style>
+
+    <Style TargetType="DataGridColumnHeader">
+      <Setter Property="Background" Value="{StaticResource BgSurface}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextSubtle}"/>
+      <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="FontSize" Value="10"/>
+      <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+      <Setter Property="BorderThickness" Value="0,0,0,1"/>
+      <Setter Property="Padding" Value="16,0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    </Style>
+
+    <Style TargetType="DataGridCell">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="16,0"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="DataGridCell">
+            <Grid Background="{TemplateBinding Background}">
+              <ContentPresenter VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+      <Style.Triggers>
+        <Trigger Property="IsSelected" Value="True">
+          <Setter Property="Background" Value="{StaticResource AccentCyanSoft}"/>
+          <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+
+    <Style TargetType="DataGridRow">
+      <Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+    </Style>
+
+    <Style x:Key="GridRowButton" TargetType="Button" BasedOn="{StaticResource DangerButton}">
+      <Setter Property="Padding" Value="14,5"/>
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="Margin" Value="0,5,14,5"/>
+      <Setter Property="HorizontalAlignment" Value="Right"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="GridRowOpenButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+      <Setter Property="Padding" Value="14,5"/>
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="Margin" Value="0,5,14,5"/>
+      <Setter Property="HorizontalAlignment" Value="Right"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- Progress bar (top loading) -->
+    <Style x:Key="LoadingBarStyle" TargetType="ProgressBar">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{StaticResource AccentCyan}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Height" Value="3"/>
+      <Setter Property="IsIndeterminate" Value="True"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ProgressBar">
+            <Grid>
+              <Border Background="Transparent"/>
+              <Border x:Name="PART_Track" Background="Transparent"/>
+              <Border x:Name="PART_Indicator" Background="{TemplateBinding Foreground}" HorizontalAlignment="Left">
+                <Border.Effect>
+                  <DropShadowEffect Color="#00d4ff" ShadowDepth="0" BlurRadius="10" Opacity="0.6"/>
+                </Border.Effect>
+              </Border>
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
     </Style>
   </Window.Resources>
 
-  <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="240"/>
-      <ColumnDefinition Width="*"/>
-    </Grid.ColumnDefinitions>
+  <Border Background="{StaticResource BgPrimary}">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="3"/>
+        <RowDefinition Height="34"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="28"/>
+      </Grid.RowDefinitions>
 
-    <!-- Sidebar -->
-    <Border Grid.Column="0" Background="#111827" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
-      <DockPanel LastChildFill="True">
-        <StackPanel DockPanel.Dock="Top" Margin="20,28,20,28">
-          <TextBlock FontSize="22" FontWeight="Black">
-            <Run Text="APEX" Foreground="#22D3EE"/><Run Text="PULSE" Foreground="#A3E635"/>
-          </TextBlock>
-          <TextBlock Text="11" FontSize="36" FontWeight="Black" Foreground="#F8FAFC" Margin="0,-8,0,0"/>
-          <TextBlock Text="Windows 11 Optimizer" FontSize="12" Foreground="#64748B" Margin="0,4,0,0"/>
+      <!-- Top loading bar -->
+      <ProgressBar Grid.Row="0" x:Name="LoadingBar" Style="{StaticResource LoadingBarStyle}" Visibility="Hidden"/>
+
+      <!-- Title bar (drag region via WindowChrome.CaptionHeight) -->
+      <Grid Grid.Row="1" Background="{StaticResource BgPrimary}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="14,0,0,0" VerticalAlignment="Center">
+          <TextBlock Text="&#x26A1;" Foreground="{StaticResource AccentCyan}" FontSize="14" VerticalAlignment="Center"/>
+          <TextBlock Text="APEXPULSE 11" FontFamily="Segoe UI Variable Display, Segoe UI" FontWeight="Bold" FontSize="12" Margin="9,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource TextPrimary}"/>
+          <Border Background="{StaticResource AccentGreenSoft}" CornerRadius="3" Padding="6,2" Margin="10,0,0,0" VerticalAlignment="Center">
+            <TextBlock Text="v2.0" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
+          </Border>
         </StackPanel>
-
-        <Border DockPanel.Dock="Bottom" Margin="16,0,16,16" Padding="12,8" Background="#0F172A" CornerRadius="8">
-          <TextBlock Name="AdminStatus" FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
-        </Border>
-
-        <StackPanel Margin="8,0">
-          <Button Name="NavDashboard" Content="Dashboard" Style="{StaticResource NavBtn}" Background="#1E293B" Foreground="#F8FAFC"/>
-          <Button Name="NavPrivacy" Content="Privacy Shield" Style="{StaticResource NavBtn}"/>
-          <Button Name="NavRollback" Content="Rollback Center" Style="{StaticResource NavBtn}"/>
+        <StackPanel Grid.Column="2" Orientation="Horizontal">
+          <Button x:Name="MinButton" Style="{StaticResource WindowControlButtonStyle}" Content="&#xE949;" ToolTip="Minimize"/>
+          <Button x:Name="MaxButton" Style="{StaticResource WindowControlButtonStyle}" Content="&#xE739;" ToolTip="Maximize"/>
+          <Button x:Name="CloseButton" Style="{StaticResource CloseControlButtonStyle}" Content="&#xE8BB;" ToolTip="Close"/>
         </StackPanel>
-      </DockPanel>
-    </Border>
-
-    <!-- Content -->
-    <Grid Grid.Column="1" Margin="28">
-
-      <!-- ========== DASHBOARD ========== -->
-      <Grid Name="DashboardPanel">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="*"/>
-          <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <!-- Status cards -->
-        <WrapPanel Grid.Row="0" Margin="0,0,0,20">
-          <Border Background="#172554" CornerRadius="10" Padding="16,12" Margin="0,0,10,10" MinWidth="130">
-            <StackPanel>
-              <TextBlock Text="Power" Foreground="#93C5FD" FontSize="12"/>
-              <TextBlock Name="PowerStatus" Text="Waiting" FontSize="18" FontWeight="Bold"/>
-            </StackPanel>
-          </Border>
-          <Border Background="#164E63" CornerRadius="10" Padding="16,12" Margin="0,0,10,10" MinWidth="130">
-            <StackPanel>
-              <TextBlock Text="GPU" Foreground="#67E8F9" FontSize="12"/>
-              <TextBlock Name="GpuStatus" Text="Waiting" FontSize="18" FontWeight="Bold"/>
-            </StackPanel>
-          </Border>
-          <Border Background="#3B0764" CornerRadius="10" Padding="16,12" Margin="0,0,10,10" MinWidth="130">
-            <StackPanel>
-              <TextBlock Text="Noise" Foreground="#D8B4FE" FontSize="12"/>
-              <TextBlock Name="NoiseStatus" Text="Waiting" FontSize="18" FontWeight="Bold"/>
-            </StackPanel>
-          </Border>
-          <Border Background="#1E3A5F" CornerRadius="10" Padding="16,12" Margin="0,0,10,10" MinWidth="130">
-            <StackPanel>
-              <TextBlock Text="Latency" Foreground="#7DD3FC" FontSize="12"/>
-              <TextBlock Name="LatencyStatus" Text="Waiting" FontSize="18" FontWeight="Bold"/>
-            </StackPanel>
-          </Border>
-          <Border Background="#134E4A" CornerRadius="10" Padding="16,12" Margin="0,0,0,10" MinWidth="130">
-            <StackPanel>
-              <TextBlock Text="Privacy" Foreground="#2DD4BF" FontSize="12"/>
-              <TextBlock Name="PrivacyStatusCard" Text="Waiting" FontSize="18" FontWeight="Bold"/>
-            </StackPanel>
-          </Border>
-        </WrapPanel>
-
-        <!-- Profile + Actions -->
-        <Border Grid.Row="1" Background="#111827" CornerRadius="14" Padding="22" Margin="0,0,0,16" BorderBrush="#1F2937" BorderThickness="1">
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*"/>
-              <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0">
-              <TextBlock Text="Profile" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
-              <RadioButton Name="SafeProfile" IsChecked="True" Content="Safe Performance"/>
-              <TextBlock Text="Gaming tweaks, backup, full compatibility with Store, Game Pass, Update and anticheats." TextWrapping="Wrap" Foreground="#94A3B8" FontSize="12" Margin="28,0,0,8"/>
-              <RadioButton Name="CompetitiveProfile" Content="Competitive"/>
-              <TextBlock Text="Adds privacy shield, background-noise reductions and latency-oriented tweaks with clear rollback." TextWrapping="Wrap" Foreground="#94A3B8" FontSize="12" Margin="28,0,0,0"/>
-            </StackPanel>
-
-            <StackPanel Grid.Column="1" Margin="24,0,0,0">
-              <TextBlock Text="Quick Actions" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
-              <Button Name="AnalyzeButton" Content="Analyze PC" Style="{StaticResource ActionBtn}"/>
-              <Button Name="ApplyButton" Content="Optimize Now" Style="{StaticResource ActionBtn}" Background="#A3E635"/>
-            </StackPanel>
-          </Grid>
-        </Border>
-
-        <!-- Output console -->
-        <TextBox Grid.Row="2" Name="OutputBox" Background="#020617" Foreground="#E2E8F0" BorderBrush="#334155"
-                 FontFamily="Consolas" FontSize="13" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
-                 IsReadOnly="True" Padding="14" BorderThickness="1"/>
-
-        <TextBlock Grid.Row="3" Text="Safe by default. Competitive by choice. Restore when needed."
-                   Foreground="#475569" Margin="0,10,0,0" FontSize="12"/>
       </Grid>
 
-      <!-- ========== PRIVACY SHIELD ========== -->
-      <Grid Name="PrivacyPanel" Visibility="Collapsed">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+      <!-- Main: sidebar + content -->
+      <Grid Grid.Row="2">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="218"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="0,0,0,20">
-          <TextBlock Text="Privacy Shield" FontSize="32" FontWeight="Black" Foreground="#F8FAFC"/>
-          <TextBlock Text="Control Windows telemetry, tracking and data collection. These optimizations are included in the Competitive profile but can also be applied independently." TextWrapping="Wrap" Foreground="#94A3B8" FontSize="14" Margin="0,4,0,0"/>
-        </StackPanel>
+        <!-- Sidebar -->
+        <Border Grid.Column="0" Background="{StaticResource BgPrimary}" BorderBrush="{StaticResource DividerBrush}" BorderThickness="0,0,1,0">
+          <DockPanel LastChildFill="False">
+            <StackPanel DockPanel.Dock="Top" Margin="12,14,12,0">
+              <TextBlock Text="NAVIGATION" Style="{StaticResource SectionLabel}" Margin="8,0,0,8"/>
+              <RadioButton x:Name="NavDashboard" Style="{StaticResource NavRadio}" GroupName="Nav" IsChecked="True">
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Text="&#xE80F;" FontFamily="Segoe MDL2 Assets" FontSize="14" Margin="0,0,12,0" VerticalAlignment="Center" Foreground="{StaticResource AccentCyan}"/>
+                  <TextBlock Text="Dashboard" VerticalAlignment="Center"/>
+                </StackPanel>
+              </RadioButton>
+              <RadioButton x:Name="NavPrivacy" Style="{StaticResource NavRadio}" GroupName="Nav">
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets" FontSize="14" Margin="0,0,12,0" VerticalAlignment="Center" Foreground="{StaticResource AccentCyan}"/>
+                  <TextBlock Text="Privacy Shield" VerticalAlignment="Center"/>
+                </StackPanel>
+              </RadioButton>
+              <RadioButton x:Name="NavRollback" Style="{StaticResource NavRadio}" GroupName="Nav">
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Text="&#xE7A7;" FontFamily="Segoe MDL2 Assets" FontSize="14" Margin="0,0,12,0" VerticalAlignment="Center" Foreground="{StaticResource AccentCyan}"/>
+                  <TextBlock Text="Rollback" VerticalAlignment="Center"/>
+                </StackPanel>
+              </RadioButton>
+              <RadioButton x:Name="NavReports" Style="{StaticResource NavRadio}" GroupName="Nav">
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Text="&#xE9F9;" FontFamily="Segoe MDL2 Assets" FontSize="14" Margin="0,0,12,0" VerticalAlignment="Center" Foreground="{StaticResource AccentCyan}"/>
+                  <TextBlock Text="Reports" VerticalAlignment="Center"/>
+                </StackPanel>
+              </RadioButton>
+            </StackPanel>
+            <Border DockPanel.Dock="Bottom" Margin="12,12,12,14" Padding="10,8" Background="{StaticResource BgSurface}" CornerRadius="6">
+              <StackPanel>
+                <TextBlock Text="SESSION" Style="{StaticResource SectionLabel}" Margin="0,0,0,4"/>
+                <TextBlock x:Name="AdminStatus" FontSize="10" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap"/>
+              </StackPanel>
+            </Border>
+          </DockPanel>
+        </Border>
 
-        <Border Grid.Row="1" Background="#111827" CornerRadius="14" Padding="22" BorderBrush="#1F2937" BorderThickness="1" Margin="0,0,0,16">
-          <StackPanel>
-            <CheckBox Name="PrivTailored" Content="Disable Tailored Experiences" IsChecked="True"/>
-            <TextBlock Text="Prevents Windows from using diagnostic data to personalize tips and recommendations." Foreground="#64748B" FontSize="12" Margin="28,0,0,10" TextWrapping="Wrap"/>
-
-            <CheckBox Name="PrivDiagnostic" Content="Reduce Diagnostic Data Upload" IsChecked="True"/>
-            <TextBlock Text="Sets telemetry to security-only level. Requires Administrator." Foreground="#64748B" FontSize="12" Margin="28,0,0,10" TextWrapping="Wrap"/>
-
-            <CheckBox Name="PrivCortana" Content="Disable Cortana and Cloud Search" IsChecked="True"/>
-            <TextBlock Text="Disables Bing web results in Start Menu search and Cortana consent." Foreground="#64748B" FontSize="12" Margin="28,0,0,10" TextWrapping="Wrap"/>
-
-            <CheckBox Name="PrivLocation" Content="Disable Location Tracking" IsChecked="True"/>
-            <TextBlock Text="Denies location access system-wide and for the current user. Requires Administrator." Foreground="#64748B" FontSize="12" Margin="28,0,0,10" TextWrapping="Wrap"/>
-
-            <CheckBox Name="PrivActivity" Content="Disable Activity History" IsChecked="True"/>
-            <TextBlock Text="Stops Windows from collecting and uploading activity history. Requires Administrator." Foreground="#64748B" FontSize="12" Margin="28,0,0,14" TextWrapping="Wrap"/>
-
+        <!-- Content area -->
+        <Grid Grid.Column="1" Background="{StaticResource BgPrimary}" ClipToBounds="True">
+          <!-- Notification banner (slides down) -->
+          <Border x:Name="NotifyBanner" VerticalAlignment="Top" Background="{StaticResource BgElevated}" BorderBrush="{StaticResource AccentCyan}" BorderThickness="0,0,0,2" Padding="22,12" Visibility="Collapsed" Panel.ZIndex="50">
+            <Border.RenderTransform>
+              <TranslateTransform x:Name="NotifyTransform" Y="-60"/>
+            </Border.RenderTransform>
             <StackPanel Orientation="Horizontal">
-              <Button Name="PrivScanButton" Content="Scan Privacy" Style="{StaticResource ActionBtn}" Background="#2DD4BF" Margin="0,0,10,0" HorizontalAlignment="Left" Width="180"/>
-              <Button Name="PrivApplyButton" Content="Apply Privacy Shield" Style="{StaticResource ActionBtn}" Background="#A3E635" HorizontalAlignment="Left" Width="220"/>
+              <TextBlock x:Name="NotifyIcon" Text="&#xE946;" FontFamily="Segoe MDL2 Assets" FontSize="13" Foreground="{StaticResource AccentCyan}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+              <TextBlock x:Name="NotifyText" Foreground="{StaticResource TextPrimary}" FontSize="12" VerticalAlignment="Center"/>
             </StackPanel>
-          </StackPanel>
-        </Border>
+          </Border>
 
-        <TextBox Grid.Row="2" Name="PrivacyOutputBox" Background="#020617" Foreground="#E2E8F0"
-                 BorderBrush="#334155" FontFamily="Consolas" FontSize="13" TextWrapping="Wrap"
-                 VerticalScrollBarVisibility="Auto" IsReadOnly="True" Padding="14" BorderThickness="1"/>
+          <!-- Dashboard -->
+          <Grid x:Name="DashboardPanel" Margin="24,18,24,18">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,18">
+              <TextBlock Text="Dashboard" FontFamily="Segoe UI Variable Display, Segoe UI" FontWeight="SemiBold" FontSize="24" Foreground="{StaticResource TextPrimary}"/>
+              <TextBlock Text="Pick a profile. Safe is recommended for most setups; Competitive adds privacy and noise reduction." Foreground="{StaticResource TextMuted}" FontSize="12" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <Grid Grid.Row="1">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+
+              <!-- Safe card -->
+              <RadioButton Grid.Column="0" x:Name="SafeProfile" Style="{StaticResource ProfileCard}" GroupName="Profile" IsChecked="True">
+                <StackPanel x:Name="SafeCardContent" Opacity="0">
+                  <StackPanel.RenderTransform>
+                    <TranslateTransform x:Name="SafeCardTranslate" Y="8"/>
+                  </StackPanel.RenderTransform>
+                  <StackPanel Orientation="Horizontal">
+                    <Border Background="{StaticResource AccentGreenSoft}" CornerRadius="4" Padding="6,2">
+                      <TextBlock Text="RECOMMENDED" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
+                    </Border>
+                  </StackPanel>
+                  <TextBlock Text="Safe Performance" FontFamily="Segoe UI Variable Display, Segoe UI" FontWeight="SemiBold" FontSize="20" Foreground="{StaticResource TextPrimary}" Margin="0,12,0,4"/>
+                  <TextBlock Text="Zero-compromise gaming tweaks with full Windows compatibility." TextWrapping="Wrap" Foreground="{StaticResource TextMuted}" FontSize="12" Margin="0,0,0,16"/>
+                  <StackPanel Margin="0,0,0,16">
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                      <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource AccentGreen}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                      <TextBlock Text="Game Mode + HAGS scheduling" Foreground="{StaticResource TextPrimary}" FontSize="12"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                      <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource AccentGreen}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                      <TextBlock Text="Ultimate Performance power plan" Foreground="{StaticResource TextPrimary}" FontSize="12"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                      <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource AccentGreen}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                      <TextBlock Text="MMCSS tuning + exclusive fullscreen" Foreground="{StaticResource TextPrimary}" FontSize="12"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                      <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource AccentGreen}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                      <TextBlock Text="GameDVR + power throttling off" Foreground="{StaticResource TextPrimary}" FontSize="12"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                      <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource AccentGreen}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                      <TextBlock Text="Gaming essentials via WinGet" Foreground="{StaticResource TextPrimary}" FontSize="12"/>
+                    </StackPanel>
+                  </StackPanel>
+                  <Button x:Name="ApplySafeButton" Style="{StaticResource SafeApplyButton}" Content="Apply Safe" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+              </RadioButton>
+
+              <!-- Competitive card -->
+              <RadioButton Grid.Column="2" x:Name="CompetitiveProfile" Style="{StaticResource ProfileCard}" GroupName="Profile">
+                <StackPanel x:Name="CompetitiveCardContent" Opacity="0">
+                  <StackPanel.RenderTransform>
+                    <TranslateTransform x:Name="CompetitiveCardTranslate" Y="8"/>
+                  </StackPanel.RenderTransform>
+                  <StackPanel Orientation="Horizontal">
+                    <Border Background="{StaticResource AccentCyanSoft}" CornerRadius="4" Padding="6,2">
+                      <TextBlock Text="ESPORTS" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AccentCyan}"/>
+                    </Border>
+                  </StackPanel>
+                  <TextBlock Text="Competitive" FontFamily="Segoe UI Variable Display, Segoe UI" FontWeight="SemiBold" FontSize="20" Foreground="{StaticResource TextPrimary}" Margin="0,12,0,4"/>
+                  <TextBlock Text="Adds privacy shield, background-noise reductions and latency-oriented tweaks." TextWrapping="Wrap" Foreground="{StaticResource TextMuted}" FontSize="12" Margin="0,0,0,16"/>
+                  <StackPanel Margin="0,0,0,16">
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                      <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource AccentCyan}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                      <TextBlock Text="Everything in Safe Performance" Foreground="{StaticResource TextPrimary}" FontSize="12"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                      <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource AccentCyan}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                      <TextBlock Text="Full Privacy Shield (5 tweaks)" Foreground="{StaticResource TextPrimary}" FontSize="12"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                      <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource AccentCyan}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                      <TextBlock Text="SysMain + WSearch + DiagTrack tuned" Foreground="{StaticResource TextPrimary}" FontSize="12"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                      <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource AccentCyan}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                      <TextBlock Text="Visual effects + toast suppression" Foreground="{StaticResource TextPrimary}" FontSize="12"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                      <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="10" Foreground="{StaticResource AccentCyan}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                      <TextBlock Text="Consumer suggestion reduction" Foreground="{StaticResource TextPrimary}" FontSize="12"/>
+                    </StackPanel>
+                  </StackPanel>
+                  <Button x:Name="ApplyCompetitiveButton" Style="{StaticResource PrimaryButton}" Content="Apply Competitive" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+              </RadioButton>
+            </Grid>
+
+            <!-- Status chips + analyze -->
+            <Border Grid.Row="2" Background="{StaticResource BgSurface}" CornerRadius="8" Padding="16,12" Margin="0,16,0,0">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="POWER" Style="{StaticResource SectionLabel}"/>
+                  <TextBlock x:Name="PowerStatus" Text="Idle" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,2,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                  <TextBlock Text="GPU" Style="{StaticResource SectionLabel}"/>
+                  <TextBlock x:Name="GpuStatus" Text="Idle" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,2,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                  <TextBlock Text="NOISE" Style="{StaticResource SectionLabel}"/>
+                  <TextBlock x:Name="NoiseStatus" Text="Idle" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,2,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="3">
+                  <TextBlock Text="LATENCY" Style="{StaticResource SectionLabel}"/>
+                  <TextBlock x:Name="LatencyStatus" Text="Idle" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,2,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="4">
+                  <TextBlock Text="PRIVACY" Style="{StaticResource SectionLabel}"/>
+                  <TextBlock x:Name="PrivacyStatusCard" Text="Idle" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,2,0,0"/>
+                </StackPanel>
+                <Button Grid.Column="5" x:Name="AnalyzeButton" Style="{StaticResource SecondaryButton}" Content="Analyze (no changes)" VerticalAlignment="Center"/>
+              </Grid>
+            </Border>
+
+            <!-- Output console -->
+            <Border Grid.Row="3" Background="{StaticResource BgSurface}" CornerRadius="8" Margin="0,12,0,0">
+              <DockPanel>
+                <Border DockPanel.Dock="Top" Background="{StaticResource BgElevated}" Padding="14,8" CornerRadius="8,8,0,0">
+                  <TextBlock Text="OUTPUT" Style="{StaticResource SectionLabel}"/>
+                </Border>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                  <TextBox x:Name="OutputBox" Style="{StaticResource ConsoleTextBox}"/>
+                </ScrollViewer>
+              </DockPanel>
+            </Border>
+          </Grid>
+
+          <!-- Privacy Shield -->
+          <Grid x:Name="PrivacyPanel" Margin="24,18,24,18" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,18">
+              <TextBlock Text="Privacy Shield" FontFamily="Segoe UI Variable Display, Segoe UI" FontWeight="SemiBold" FontSize="24" Foreground="{StaticResource TextPrimary}"/>
+              <TextBlock Text="Control Windows telemetry, tracking and data collection. Each setting can be toggled individually before applying." Foreground="{StaticResource TextMuted}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <Border Grid.Row="1" Background="{StaticResource BgSurface}" CornerRadius="8">
+              <StackPanel>
+                <Border Padding="20,14" BorderBrush="{StaticResource DividerBrush}" BorderThickness="0,0,0,1">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                      <TextBlock Text="Tailored Experiences" Foreground="{StaticResource TextPrimary}" FontWeight="SemiBold" FontSize="13"/>
+                      <TextBlock Text="Prevents Windows from using diagnostic data to personalize tips and recommendations." Foreground="{StaticResource TextMuted}" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <ToggleButton Grid.Column="1" x:Name="PrivTailored" Style="{StaticResource PillToggle}" IsChecked="True" VerticalAlignment="Center"/>
+                  </Grid>
+                </Border>
+
+                <Border Padding="20,14" BorderBrush="{StaticResource DividerBrush}" BorderThickness="0,0,0,1">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                      <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Diagnostic Data Upload" Foreground="{StaticResource TextPrimary}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
+                        <Border Background="{StaticResource AdminAmberSoft}" CornerRadius="3" Padding="6,1" Margin="10,0,0,0" VerticalAlignment="Center">
+                          <TextBlock Text="ADMIN" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AdminAmber}"/>
+                        </Border>
+                      </StackPanel>
+                      <TextBlock Text="Sets telemetry to security-only level. Requires elevation." Foreground="{StaticResource TextMuted}" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <ToggleButton Grid.Column="1" x:Name="PrivDiagnostic" Style="{StaticResource PillToggle}" IsChecked="True" VerticalAlignment="Center"/>
+                  </Grid>
+                </Border>
+
+                <Border Padding="20,14" BorderBrush="{StaticResource DividerBrush}" BorderThickness="0,0,0,1">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                      <TextBlock Text="Cortana &amp; Cloud Search" Foreground="{StaticResource TextPrimary}" FontWeight="SemiBold" FontSize="13"/>
+                      <TextBlock Text="Disables Bing web results in Start Menu search and Cortana consent." Foreground="{StaticResource TextMuted}" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <ToggleButton Grid.Column="1" x:Name="PrivCortana" Style="{StaticResource PillToggle}" IsChecked="True" VerticalAlignment="Center"/>
+                  </Grid>
+                </Border>
+
+                <Border Padding="20,14" BorderBrush="{StaticResource DividerBrush}" BorderThickness="0,0,0,1">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                      <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Location Tracking" Foreground="{StaticResource TextPrimary}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
+                        <Border Background="{StaticResource AdminAmberSoft}" CornerRadius="3" Padding="6,1" Margin="10,0,0,0" VerticalAlignment="Center">
+                          <TextBlock Text="ADMIN" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AdminAmber}"/>
+                        </Border>
+                      </StackPanel>
+                      <TextBlock Text="Denies location access system-wide and per-user." Foreground="{StaticResource TextMuted}" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <ToggleButton Grid.Column="1" x:Name="PrivLocation" Style="{StaticResource PillToggle}" IsChecked="True" VerticalAlignment="Center"/>
+                  </Grid>
+                </Border>
+
+                <Border Padding="20,14">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                      <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Activity History" Foreground="{StaticResource TextPrimary}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
+                        <Border Background="{StaticResource AdminAmberSoft}" CornerRadius="3" Padding="6,1" Margin="10,0,0,0" VerticalAlignment="Center">
+                          <TextBlock Text="ADMIN" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AdminAmber}"/>
+                        </Border>
+                      </StackPanel>
+                      <TextBlock Text="Stops Windows from collecting and uploading activity history." Foreground="{StaticResource TextMuted}" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <ToggleButton Grid.Column="1" x:Name="PrivActivity" Style="{StaticResource PillToggle}" IsChecked="True" VerticalAlignment="Center"/>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </Border>
+
+            <Grid Grid.Row="2" Margin="0,16,0,0">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+              </Grid.RowDefinitions>
+              <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                <Button x:Name="PrivScanButton" Style="{StaticResource SecondaryButton}" Content="Scan Privacy" Margin="0,0,10,0"/>
+                <Button x:Name="PrivApplyButton" Style="{StaticResource PrimaryButton}" Content="Apply Privacy Shield"/>
+              </StackPanel>
+              <Border Grid.Row="1" Background="{StaticResource BgSurface}" CornerRadius="8">
+                <DockPanel>
+                  <Border DockPanel.Dock="Top" Background="{StaticResource BgElevated}" Padding="14,8" CornerRadius="8,8,0,0">
+                    <TextBlock Text="OUTPUT" Style="{StaticResource SectionLabel}"/>
+                  </Border>
+                  <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <TextBox x:Name="PrivacyOutputBox" Style="{StaticResource ConsoleTextBox}"/>
+                  </ScrollViewer>
+                </DockPanel>
+              </Border>
+            </Grid>
+          </Grid>
+
+          <!-- Rollback Center -->
+          <Grid x:Name="RollbackPanel" Margin="24,18,24,18" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,12">
+              <TextBlock Text="Rollback Center" FontFamily="Segoe UI Variable Display, Segoe UI" FontWeight="SemiBold" FontSize="24" Foreground="{StaticResource TextPrimary}"/>
+              <TextBlock Text="Restore your system to a previous state from any ApexPulse backup." Foreground="{StaticResource TextMuted}" FontSize="12" Margin="0,4,0,0"/>
+              <TextBlock x:Name="BackupDirLabel" Foreground="{StaticResource TextSubtle}" FontSize="11" FontFamily="Cascadia Mono, Consolas" Margin="0,2,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+              <Button x:Name="CreateBackupNowButton" Style="{StaticResource SafeApplyButton}" Content="Create Backup Now" Margin="0,0,10,0"/>
+              <Button x:Name="RefreshBackupsButton" Style="{StaticResource SecondaryButton}" Content="Refresh"/>
+            </StackPanel>
+
+            <Grid Grid.Row="2">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="320"/>
+              </Grid.ColumnDefinitions>
+
+              <Border Grid.Column="0" Background="{StaticResource BgSurface}" CornerRadius="8" ClipToBounds="True">
+                <DataGrid x:Name="BackupList">
+                  <DataGrid.Columns>
+                    <DataGridTextColumn Header="TIMESTAMP" Binding="{Binding Name}" Width="220">
+                      <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                          <Setter Property="FontFamily" Value="Cascadia Mono, Consolas"/>
+                          <Setter Property="FontSize" Value="11"/>
+                          <Setter Property="VerticalAlignment" Value="Center"/>
+                          <Setter Property="Foreground" Value="#e8eaed"/>
+                        </Style>
+                      </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="PROFILE" Binding="{Binding Profile}" Width="*">
+                      <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                          <Setter Property="FontSize" Value="12"/>
+                          <Setter Property="VerticalAlignment" Value="Center"/>
+                          <Setter Property="Foreground" Value="#e8eaed"/>
+                        </Style>
+                      </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTemplateColumn Header="ACTION" Width="140">
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <Button Tag="RestoreRow" Content="Restore" Style="{StaticResource GridRowButton}"/>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                  </DataGrid.Columns>
+                </DataGrid>
+              </Border>
+
+              <Border Grid.Column="2" Background="{StaticResource BgSurface}" CornerRadius="8">
+                <DockPanel>
+                  <Border DockPanel.Dock="Top" Background="{StaticResource BgElevated}" Padding="14,8" CornerRadius="8,8,0,0">
+                    <TextBlock Text="BACKUP DETAILS" Style="{StaticResource SectionLabel}"/>
+                  </Border>
+                  <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <TextBox x:Name="BackupDetailBox" Style="{StaticResource ConsoleTextBox}"/>
+                  </ScrollViewer>
+                </DockPanel>
+              </Border>
+            </Grid>
+
+            <Border Grid.Row="3" Margin="0,14,0,0" Background="{StaticResource BgSurface}" CornerRadius="8" Padding="14,10">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{StaticResource AccentCyan}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBlock Text="Every Apply run creates a backup automatically. Click Restore on a row to revert." Foreground="{StaticResource TextMuted}" FontSize="11" VerticalAlignment="Center"/>
+              </StackPanel>
+            </Border>
+          </Grid>
+
+          <!-- Reports -->
+          <Grid x:Name="ReportsPanel" Margin="24,18,24,18" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,12">
+              <TextBlock Text="Reports" FontFamily="Segoe UI Variable Display, Segoe UI" FontWeight="SemiBold" FontSize="24" Foreground="{StaticResource TextPrimary}"/>
+              <TextBlock Text="Timestamped HTML and JSON reports from every run." Foreground="{StaticResource TextMuted}" FontSize="12" Margin="0,4,0,0"/>
+              <TextBlock x:Name="ReportDirLabel" Foreground="{StaticResource TextSubtle}" FontSize="11" FontFamily="Cascadia Mono, Consolas" Margin="0,2,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+              <Button x:Name="RefreshReportsButton" Style="{StaticResource SecondaryButton}" Content="Refresh"/>
+            </StackPanel>
+
+            <Border Grid.Row="2" Background="{StaticResource BgSurface}" CornerRadius="8" ClipToBounds="True">
+              <DataGrid x:Name="ReportsList">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="REPORT" Binding="{Binding DisplayName}" Width="*">
+                    <DataGridTextColumn.ElementStyle>
+                      <Style TargetType="TextBlock">
+                        <Setter Property="FontFamily" Value="Cascadia Mono, Consolas"/>
+                        <Setter Property="FontSize" Value="11"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="Foreground" Value="#e8eaed"/>
+                      </Style>
+                    </DataGridTextColumn.ElementStyle>
+                  </DataGridTextColumn>
+                  <DataGridTextColumn Header="CREATED" Binding="{Binding Created}" Width="180">
+                    <DataGridTextColumn.ElementStyle>
+                      <Style TargetType="TextBlock">
+                        <Setter Property="FontFamily" Value="Cascadia Mono, Consolas"/>
+                        <Setter Property="FontSize" Value="11"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="Foreground" Value="#e8eaed"/>
+                      </Style>
+                    </DataGridTextColumn.ElementStyle>
+                  </DataGridTextColumn>
+                  <DataGridTemplateColumn Header="ACTION" Width="140">
+                    <DataGridTemplateColumn.CellTemplate>
+                      <DataTemplate>
+                        <Button Tag="OpenRow" Content="Open" Style="{StaticResource GridRowOpenButton}"/>
+                      </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                  </DataGridTemplateColumn>
+                </DataGrid.Columns>
+              </DataGrid>
+            </Border>
+          </Grid>
+        </Grid>
       </Grid>
 
-      <!-- ========== ROLLBACK CENTER ========== -->
-      <Grid Name="RollbackPanel" Visibility="Collapsed">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="*"/>
-          <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <StackPanel Grid.Row="0" Margin="0,0,0,16">
-          <TextBlock Text="Rollback Center" FontSize="32" FontWeight="Black" Foreground="#F8FAFC"/>
-          <TextBlock Text="Restore your system to a previous state from any ApexPulse backup." Foreground="#94A3B8" FontSize="14" Margin="0,4,0,0" TextWrapping="Wrap"/>
-          <TextBlock Name="BackupDirLabel" Foreground="#475569" FontSize="12" Margin="0,4,0,0"/>
-        </StackPanel>
-
-        <Grid Grid.Row="1">
+      <!-- Status bar -->
+      <Border Grid.Row="3" Background="{StaticResource BgSurface}" BorderBrush="{StaticResource DividerBrush}" BorderThickness="0,1,0,0">
+        <Grid Margin="14,0">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
           </Grid.ColumnDefinitions>
-
-          <Border Grid.Column="0" Background="#111827" CornerRadius="14" Padding="16" BorderBrush="#1F2937" BorderThickness="1" Margin="0,0,10,0">
-            <DockPanel>
-              <TextBlock DockPanel.Dock="Top" Text="Available Backups" FontSize="16" FontWeight="Bold" Margin="0,0,0,12"/>
-              <Button DockPanel.Dock="Bottom" Name="RefreshBackupsButton" Content="Refresh" Style="{StaticResource ActionBtn}" Background="#334155" Foreground="#E2E8F0" Margin="0,12,0,0"/>
-              <ListBox Name="BackupList" Background="#0F172A" Foreground="#E2E8F0" BorderBrush="#1E293B" BorderThickness="1" Padding="4" FontSize="13"/>
-            </DockPanel>
-          </Border>
-
-          <Border Grid.Column="1" Background="#111827" CornerRadius="14" Padding="16" BorderBrush="#1F2937" BorderThickness="1">
-            <DockPanel>
-              <TextBlock DockPanel.Dock="Top" Text="Backup Details" FontSize="16" FontWeight="Bold" Margin="0,0,0,12"/>
-              <TextBox Name="BackupDetailBox" Background="#0F172A" Foreground="#E2E8F0" BorderBrush="#1E293B"
-                       FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
-                       IsReadOnly="True" Padding="10" BorderThickness="1"/>
-            </DockPanel>
-          </Border>
+          <TextBlock Grid.Column="0" x:Name="StatusText" Text="Ready." Foreground="{StaticResource TextMuted}" FontSize="11" VerticalAlignment="Center"/>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+            <TextBlock Text="LAST RUN" Style="{StaticResource SectionLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBlock x:Name="LastRunText" Text="â€”" Foreground="{StaticResource TextPrimary}" FontFamily="Cascadia Mono, Consolas" FontSize="11" VerticalAlignment="Center"/>
+          </StackPanel>
         </Grid>
-
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,14,0,0">
-          <Button Name="RestoreButton" Content="Restore Selected Backup" Style="{StaticResource ActionBtn}" Background="#F97316" Foreground="#111827" HorizontalAlignment="Left" Width="280"/>
-        </StackPanel>
-      </Grid>
-
+      </Border>
     </Grid>
-  </Grid>
+  </Border>
 </Window>
 "@
 
@@ -1909,79 +2739,221 @@ function Show-ApexPulseUi {
     $window = [Windows.Markup.XamlReader]::Load($reader)
 
     # --- Find controls ---
-    $navDashboard      = $window.FindName("NavDashboard")
-    $navPrivacy        = $window.FindName("NavPrivacy")
-    $navRollback       = $window.FindName("NavRollback")
-    $dashboardPanel    = $window.FindName("DashboardPanel")
-    $privacyPanel      = $window.FindName("PrivacyPanel")
-    $rollbackPanel     = $window.FindName("RollbackPanel")
-    $adminStatusLabel  = $window.FindName("AdminStatus")
-    $safeProfile       = $window.FindName("SafeProfile")
-    $competitiveProfile = $window.FindName("CompetitiveProfile")
-    $analyzeButton     = $window.FindName("AnalyzeButton")
-    $applyButton       = $window.FindName("ApplyButton")
-    $outputBox         = $window.FindName("OutputBox")
-    $powerStatus       = $window.FindName("PowerStatus")
-    $gpuStatus         = $window.FindName("GpuStatus")
-    $noiseStatus       = $window.FindName("NoiseStatus")
-    $latencyStatus     = $window.FindName("LatencyStatus")
-    $privacyStatusCard = $window.FindName("PrivacyStatusCard")
-    $privTailored      = $window.FindName("PrivTailored")
-    $privDiagnostic    = $window.FindName("PrivDiagnostic")
-    $privCortana       = $window.FindName("PrivCortana")
-    $privLocation      = $window.FindName("PrivLocation")
-    $privActivity      = $window.FindName("PrivActivity")
-    $privScanButton    = $window.FindName("PrivScanButton")
-    $privApplyButton   = $window.FindName("PrivApplyButton")
-    $privacyOutputBox  = $window.FindName("PrivacyOutputBox")
-    $backupDirLabel    = $window.FindName("BackupDirLabel")
-    $backupList        = $window.FindName("BackupList")
-    $backupDetailBox   = $window.FindName("BackupDetailBox")
-    $refreshBackups    = $window.FindName("RefreshBackupsButton")
-    $restoreButton     = $window.FindName("RestoreButton")
+    $minButton            = $window.FindName("MinButton")
+    $maxButton            = $window.FindName("MaxButton")
+    $closeButton          = $window.FindName("CloseButton")
+    $loadingBar           = $window.FindName("LoadingBar")
+    $notifyBanner         = $window.FindName("NotifyBanner")
+    $notifyIcon           = $window.FindName("NotifyIcon")
+    $notifyText           = $window.FindName("NotifyText")
+    $notifyTransform      = $window.FindName("NotifyTransform")
+
+    $navDashboard         = $window.FindName("NavDashboard")
+    $navPrivacy           = $window.FindName("NavPrivacy")
+    $navRollback          = $window.FindName("NavRollback")
+    $navReports           = $window.FindName("NavReports")
+
+    $dashboardPanel       = $window.FindName("DashboardPanel")
+    $privacyPanel         = $window.FindName("PrivacyPanel")
+    $rollbackPanel        = $window.FindName("RollbackPanel")
+    $reportsPanel         = $window.FindName("ReportsPanel")
+
+    $adminStatusLabel     = $window.FindName("AdminStatus")
+    $statusText           = $window.FindName("StatusText")
+    $lastRunText          = $window.FindName("LastRunText")
+
+    $safeProfile          = $window.FindName("SafeProfile")
+    $competitiveProfile   = $window.FindName("CompetitiveProfile")
+    $safeCardContent      = $window.FindName("SafeCardContent")
+    $competitiveCardContent = $window.FindName("CompetitiveCardContent")
+    $safeCardTranslate    = $window.FindName("SafeCardTranslate")
+    $competitiveCardTranslate = $window.FindName("CompetitiveCardTranslate")
+
+    $analyzeButton        = $window.FindName("AnalyzeButton")
+    $applySafeButton      = $window.FindName("ApplySafeButton")
+    $applyCompetitiveButton = $window.FindName("ApplyCompetitiveButton")
+    $outputBox            = $window.FindName("OutputBox")
+
+    $powerStatus          = $window.FindName("PowerStatus")
+    $gpuStatus            = $window.FindName("GpuStatus")
+    $noiseStatus          = $window.FindName("NoiseStatus")
+    $latencyStatus        = $window.FindName("LatencyStatus")
+    $privacyStatusCard    = $window.FindName("PrivacyStatusCard")
+
+    $privTailored         = $window.FindName("PrivTailored")
+    $privDiagnostic       = $window.FindName("PrivDiagnostic")
+    $privCortana          = $window.FindName("PrivCortana")
+    $privLocation         = $window.FindName("PrivLocation")
+    $privActivity         = $window.FindName("PrivActivity")
+    $privScanButton       = $window.FindName("PrivScanButton")
+    $privApplyButton      = $window.FindName("PrivApplyButton")
+    $privacyOutputBox     = $window.FindName("PrivacyOutputBox")
+
+    $backupDirLabel       = $window.FindName("BackupDirLabel")
+    $backupList           = $window.FindName("BackupList")
+    $backupDetailBox      = $window.FindName("BackupDetailBox")
+    $refreshBackups       = $window.FindName("RefreshBackupsButton")
+    $createBackupNow      = $window.FindName("CreateBackupNowButton")
+
+    $reportsList          = $window.FindName("ReportsList")
+    $refreshReports       = $window.FindName("RefreshReportsButton")
+    $reportDirLabel       = $window.FindName("ReportDirLabel")
+
+    # --- Window chrome buttons ---
+    $minButton.Add_Click({ $window.WindowState = [System.Windows.WindowState]::Minimized })
+    $maxButton.Add_Click({
+        if ($window.WindowState -eq [System.Windows.WindowState]::Maximized) {
+            $window.WindowState = [System.Windows.WindowState]::Normal
+            $maxButton.Content = [char]0xE739
+        } else {
+            $window.WindowState = [System.Windows.WindowState]::Maximized
+            $maxButton.Content = [char]0xE923
+        }
+    })
+    $closeButton.Add_Click({ $window.Close() })
 
     # --- Admin indicator ---
     $isAdmin = Test-ApexPulseAdmin
     $adminStatusLabel.Text = if ($isAdmin) { "Running as Administrator" } else { "Standard user (some tweaks need elevation)" }
 
+    # --- Status bar helper with fade-in animation ---
+    $setStatus = {
+        param([string]$msg)
+        $statusText.Text = $msg
+        $anim = New-Object System.Windows.Media.Animation.DoubleAnimation(0.0, 1.0, [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(200)))
+        $anim.EasingFunction = New-Object System.Windows.Media.Animation.CubicEase -Property @{ EasingMode = [System.Windows.Media.Animation.EasingMode]::EaseOut }
+        $statusText.BeginAnimation([System.Windows.Controls.TextBlock]::OpacityProperty, $anim)
+    }
+
+    $setLastRun = {
+        $lastRunText.Text = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    }
+
+    # --- Loading bar control ---
+    $showLoading = {
+        $loadingBar.Visibility = [System.Windows.Visibility]::Visible
+        $loadingBar.IsIndeterminate = $true
+    }
+    $hideLoading = {
+        $loadingBar.IsIndeterminate = $false
+        $loadingBar.Visibility = [System.Windows.Visibility]::Hidden
+    }
+
+    # --- Notification banner with slide-down + auto-dismiss ---
+    $script:NotifyTimer = $null
+    $showNotify = {
+        param([string]$msg, [string]$kind = "info")
+        $notifyText.Text = $msg
+        switch ($kind) {
+            "success" {
+                $notifyBanner.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#a3e635")
+                $notifyIcon.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#a3e635")
+                $notifyIcon.Text = [char]0xE73E
+            }
+            "error" {
+                $notifyBanner.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#ff4757")
+                $notifyIcon.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#ff4757")
+                $notifyIcon.Text = [char]0xEA39
+            }
+            default {
+                $notifyBanner.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#00d4ff")
+                $notifyIcon.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#00d4ff")
+                $notifyIcon.Text = [char]0xE946
+            }
+        }
+        $notifyBanner.Visibility = [System.Windows.Visibility]::Visible
+        $notifyBanner.Opacity = 0
+
+        $slide = New-Object System.Windows.Media.Animation.DoubleAnimation(-60.0, 0.0, [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(220)))
+        $slide.EasingFunction = New-Object System.Windows.Media.Animation.CubicEase -Property @{ EasingMode = [System.Windows.Media.Animation.EasingMode]::EaseOut }
+        $notifyTransform.BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, $slide)
+
+        $fade = New-Object System.Windows.Media.Animation.DoubleAnimation(0.0, 1.0, [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(220)))
+        $notifyBanner.BeginAnimation([System.Windows.Controls.Border]::OpacityProperty, $fade)
+
+        if ($script:NotifyTimer) { $script:NotifyTimer.Stop() }
+        $script:NotifyTimer = New-Object System.Windows.Threading.DispatcherTimer
+        $script:NotifyTimer.Interval = [TimeSpan]::FromSeconds(4)
+        $script:NotifyTimer.Add_Tick({
+            $script:NotifyTimer.Stop()
+            $slideOut = New-Object System.Windows.Media.Animation.DoubleAnimation(0.0, -60.0, [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(220)))
+            $slideOut.EasingFunction = New-Object System.Windows.Media.Animation.CubicEase -Property @{ EasingMode = [System.Windows.Media.Animation.EasingMode]::EaseIn }
+            $notifyTransform.BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, $slideOut)
+            $fadeOut = New-Object System.Windows.Media.Animation.DoubleAnimation(1.0, 0.0, [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(220)))
+            $fadeOut.Completed += { $notifyBanner.Visibility = [System.Windows.Visibility]::Collapsed }
+            $notifyBanner.BeginAnimation([System.Windows.Controls.Border]::OpacityProperty, $fadeOut)
+        })
+        $script:NotifyTimer.Start()
+    }
+
+    # --- Card entry animation: opacity 0->1 + translateY 8->0, with stagger ---
+    $animateCardsIn = {
+        $safeCardContent.Opacity = 0
+        $safeCardTranslate.Y = 8
+        $competitiveCardContent.Opacity = 0
+        $competitiveCardTranslate.Y = 8
+
+        $easeCubic = New-Object System.Windows.Media.Animation.CubicEase -Property @{ EasingMode = [System.Windows.Media.Animation.EasingMode]::EaseOut }
+
+        $fadeSafe = New-Object System.Windows.Media.Animation.DoubleAnimation(0.0, 1.0, [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(220)))
+        $fadeSafe.EasingFunction = $easeCubic
+        $slideSafe = New-Object System.Windows.Media.Animation.DoubleAnimation(8.0, 0.0, [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(220)))
+        $slideSafe.EasingFunction = $easeCubic
+        $safeCardContent.BeginAnimation([System.Windows.Controls.StackPanel]::OpacityProperty, $fadeSafe)
+        $safeCardTranslate.BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, $slideSafe)
+
+        $compTimer = New-Object System.Windows.Threading.DispatcherTimer
+        $compTimer.Interval = [TimeSpan]::FromMilliseconds(50)
+        $compTimer.Add_Tick({
+            $compTimer.Stop()
+            $fadeC = New-Object System.Windows.Media.Animation.DoubleAnimation(0.0, 1.0, [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(220)))
+            $fadeC.EasingFunction = New-Object System.Windows.Media.Animation.CubicEase -Property @{ EasingMode = [System.Windows.Media.Animation.EasingMode]::EaseOut }
+            $slideC = New-Object System.Windows.Media.Animation.DoubleAnimation(8.0, 0.0, [System.Windows.Duration]::new([TimeSpan]::FromMilliseconds(220)))
+            $slideC.EasingFunction = New-Object System.Windows.Media.Animation.CubicEase -Property @{ EasingMode = [System.Windows.Media.Animation.EasingMode]::EaseOut }
+            $competitiveCardContent.BeginAnimation([System.Windows.Controls.StackPanel]::OpacityProperty, $fadeC)
+            $competitiveCardTranslate.BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, $slideC)
+        })
+        $compTimer.Start()
+    }
+
     # --- Navigation ---
     $switchPanel = {
-        param($target)
-        $dashboardPanel.Visibility = "Collapsed"
-        $privacyPanel.Visibility = "Collapsed"
-        $rollbackPanel.Visibility = "Collapsed"
-
-        $navDashboard.Background = [Windows.Media.Brushes]::Transparent
-        $navDashboard.Foreground = [Windows.Media.BrushConverter]::new().ConvertFrom("#94A3B8")
-        $navPrivacy.Background = [Windows.Media.Brushes]::Transparent
-        $navPrivacy.Foreground = [Windows.Media.BrushConverter]::new().ConvertFrom("#94A3B8")
-        $navRollback.Background = [Windows.Media.Brushes]::Transparent
-        $navRollback.Foreground = [Windows.Media.BrushConverter]::new().ConvertFrom("#94A3B8")
+        param([string]$target)
+        $dashboardPanel.Visibility = [System.Windows.Visibility]::Collapsed
+        $privacyPanel.Visibility = [System.Windows.Visibility]::Collapsed
+        $rollbackPanel.Visibility = [System.Windows.Visibility]::Collapsed
+        $reportsPanel.Visibility = [System.Windows.Visibility]::Collapsed
 
         switch ($target) {
             "Dashboard" {
-                $dashboardPanel.Visibility = "Visible"
-                $navDashboard.Background = [Windows.Media.BrushConverter]::new().ConvertFrom("#1E293B")
-                $navDashboard.Foreground = [Windows.Media.Brushes]::White
+                $dashboardPanel.Visibility = [System.Windows.Visibility]::Visible
+                & $animateCardsIn
+                & $setStatus "Dashboard"
             }
             "Privacy" {
-                $privacyPanel.Visibility = "Visible"
-                $navPrivacy.Background = [Windows.Media.BrushConverter]::new().ConvertFrom("#1E293B")
-                $navPrivacy.Foreground = [Windows.Media.Brushes]::White
+                $privacyPanel.Visibility = [System.Windows.Visibility]::Visible
+                & $setStatus "Privacy Shield"
             }
             "Rollback" {
-                $rollbackPanel.Visibility = "Visible"
-                $navRollback.Background = [Windows.Media.BrushConverter]::new().ConvertFrom("#1E293B")
-                $navRollback.Foreground = [Windows.Media.Brushes]::White
+                $rollbackPanel.Visibility = [System.Windows.Visibility]::Visible
+                & $setStatus "Rollback Center"
+            }
+            "Reports" {
+                $reportsPanel.Visibility = [System.Windows.Visibility]::Visible
+                & $setStatus "Reports"
             }
         }
     }
 
-    $navDashboard.Add_Click({ & $switchPanel "Dashboard" })
-    $navPrivacy.Add_Click({ & $switchPanel "Privacy" })
-    $navRollback.Add_Click({
+    $navDashboard.Add_Checked({ & $switchPanel "Dashboard" })
+    $navPrivacy.Add_Checked({ & $switchPanel "Privacy" })
+    $navRollback.Add_Checked({
         & $switchPanel "Rollback"
         & $loadBackups
+    })
+    $navReports.Add_Checked({
+        & $switchPanel "Reports"
+        & $loadReports
     })
 
     # --- Dashboard: render report ---
@@ -2027,25 +2999,52 @@ function Show-ApexPulseUi {
 
     $analyzeButton.Add_Click({
         try {
+            & $setStatus "Analyzing..."
             $outputBox.Text = "Analyzing..."
             [Windows.Forms.Application]::DoEvents() 2>$null
             $report = Invoke-ApexPulseProfile -SelectedProfile (& $getProfile) -SelectedMode "Analyze"
             & $renderReport $report
+            & $setLastRun
+            & $setStatus "Analyze complete."
+            & $showNotify "Analyze complete" "success"
         } catch {
             $outputBox.Text = $_.Exception.Message
+            & $setStatus "Analyze failed."
+            & $showNotify $_.Exception.Message "error"
         }
     })
 
-    $applyButton.Add_Click({
+    $runApply = {
+        param([string]$profileName)
         try {
+            $safeProfile.IsChecked = ($profileName -eq "Safe")
+            $competitiveProfile.IsChecked = ($profileName -eq "Competitive")
+            $applySafeButton.IsEnabled = $false
+            $applyCompetitiveButton.IsEnabled = $false
+            & $showLoading
+            & $setStatus "Applying $profileName optimizations..."
             $outputBox.Text = "Creating backup and restore point, then applying optimizations..."
             [Windows.Forms.Application]::DoEvents() 2>$null
-            $report = Invoke-ApexPulseProfile -SelectedProfile (& $getProfile) -SelectedMode "Apply"
+            $report = Invoke-ApexPulseProfile -SelectedProfile $profileName -SelectedMode "Apply"
             & $renderReport $report
+            & $setLastRun
+            & $hideLoading
+            $applySafeButton.IsEnabled = $true
+            $applyCompetitiveButton.IsEnabled = $true
+            & $setStatus "$profileName apply complete."
+            & $showNotify "$profileName profile applied" "success"
         } catch {
             $outputBox.Text = $_.Exception.Message
+            & $hideLoading
+            $applySafeButton.IsEnabled = $true
+            $applyCompetitiveButton.IsEnabled = $true
+            & $setStatus "Apply failed."
+            & $showNotify $_.Exception.Message "error"
         }
-    })
+    }
+
+    $applySafeButton.Add_Click({ & $runApply "Safe" })
+    $applyCompetitiveButton.Add_Click({ & $runApply "Competitive" })
 
     # --- Privacy Shield ---
     $privacyCheckboxMap = @{
@@ -2058,6 +3057,7 @@ function Show-ApexPulseUi {
 
     $privScanButton.Add_Click({
         try {
+            & $setStatus "Scanning privacy settings..."
             $privacyOutputBox.Text = "Scanning privacy settings..."
             [Windows.Forms.Application]::DoEvents() 2>$null
             $allTweaks = Get-ApexPulseTweaks
@@ -2074,8 +3074,11 @@ function Show-ApexPulseUi {
                 }
             }
             $privacyOutputBox.Text = $lines -join [Environment]::NewLine
+            & $setStatus "Privacy scan complete."
         } catch {
             $privacyOutputBox.Text = $_.Exception.Message
+            & $setStatus "Privacy scan failed."
+            & $showNotify $_.Exception.Message "error"
         }
     })
 
@@ -2094,9 +3097,12 @@ function Show-ApexPulseUi {
 
             if ($selectedTweaks.Count -eq 0) {
                 $privacyOutputBox.Text = "No privacy tweaks selected."
+                & $showNotify "No privacy tweaks selected" "info"
                 return
             }
 
+            & $showLoading
+            & $setStatus "Applying Privacy Shield..."
             $privacyOutputBox.Text = "Creating backup and applying privacy shield..."
             [Windows.Forms.Application]::DoEvents() 2>$null
 
@@ -2147,8 +3153,15 @@ function Show-ApexPulseUi {
             $lines += "HTML Report: $privHtmlPath"
 
             $privacyOutputBox.Text = $lines -join [Environment]::NewLine
+            & $setLastRun
+            & $hideLoading
+            & $setStatus "Privacy Shield applied."
+            & $showNotify "Privacy Shield applied" "success"
         } catch {
             $privacyOutputBox.Text = $_.Exception.Message
+            & $hideLoading
+            & $setStatus "Privacy apply failed."
+            & $showNotify $_.Exception.Message "error"
         }
     })
 
@@ -2157,30 +3170,24 @@ function Show-ApexPulseUi {
     $script:BackupEntries = @()
 
     $loadBackups = {
-        $backupList.Items.Clear()
-        $backupDetailBox.Text = ""
         $script:BackupEntries = @(Get-ApexPulseBackups)
-
-        if ($script:BackupEntries.Count -eq 0) {
-            $backupList.Items.Add("No backups found.") | Out-Null
+        $backupList.ItemsSource = $script:BackupEntries
+        $backupDetailBox.Text = if ($script:BackupEntries.Count -eq 0) {
+            "No backups found yet. Run an Apply or click Create Backup Now."
         } else {
-            foreach ($entry in $script:BackupEntries) {
-                $display = "$($entry.Name)  ($($entry.Profile))"
-                $backupList.Items.Add($display) | Out-Null
-            }
+            "Select a backup to view its manifest."
         }
     }
 
     $refreshBackups.Add_Click({ & $loadBackups })
 
     $backupList.Add_SelectionChanged({
-        $idx = $backupList.SelectedIndex
-        if ($idx -lt 0 -or $idx -ge $script:BackupEntries.Count) {
+        $entry = $backupList.SelectedItem
+        if ($null -eq $entry) {
             $backupDetailBox.Text = ""
             return
         }
 
-        $entry = $script:BackupEntries[$idx]
         $manifestPath = Join-Path $entry.Path "manifest.json"
         if (Test-Path -LiteralPath $manifestPath) {
             try {
@@ -2211,30 +3218,114 @@ function Show-ApexPulseUi {
         }
     })
 
-    $restoreButton.Add_Click({
-        $idx = $backupList.SelectedIndex
-        if ($idx -lt 0 -or $idx -ge $script:BackupEntries.Count) {
-            $backupDetailBox.Text = "Select a backup first."
-            return
-        }
-
-        $entry = $script:BackupEntries[$idx]
-        try {
-            $backupDetailBox.Text = "Restoring from $($entry.Name)..."
-            [Windows.Forms.Application]::DoEvents() 2>$null
-            $results = Restore-ApexPulseBackup -Path $entry.Path
-            $lines = @("Restore complete:", "")
-            foreach ($r in $results) {
-                $lines += "[$($r.Status)] $($r.Target) - $($r.Detail)"
+    # Per-row Restore button (routed Click event from DataGrid cells)
+    $backupList.AddHandler(
+        [System.Windows.Controls.Primitives.ButtonBase]::ClickEvent,
+        [System.Windows.RoutedEventHandler]{
+            param($s, $e)
+            $btn = $e.OriginalSource
+            if (-not ($btn -is [System.Windows.Controls.Button])) { return }
+            if ($btn.Tag -ne "RestoreRow") { return }
+            $entry = $btn.DataContext
+            if ($null -eq $entry) { return }
+            try {
+                & $showLoading
+                & $setStatus "Restoring from $($entry.Name)..."
+                $backupDetailBox.Text = "Restoring from $($entry.Name)..."
+                [Windows.Forms.Application]::DoEvents() 2>$null
+                $results = Restore-ApexPulseBackup -Path $entry.Path
+                $lines = @("Restore complete:", "")
+                foreach ($r in $results) {
+                    $lines += "[$($r.Status)] $($r.Target) - $($r.Detail)"
+                }
+                $backupDetailBox.Text = $lines -join [Environment]::NewLine
+                & $hideLoading
+                & $setLastRun
+                & $setStatus "Restore complete."
+                & $showNotify "Backup restored" "success"
+            } catch {
+                & $hideLoading
+                $backupDetailBox.Text = "Restore failed: $($_.Exception.Message)"
+                & $setStatus "Restore failed."
+                & $showNotify $_.Exception.Message "error"
             }
-            $backupDetailBox.Text = $lines -join [Environment]::NewLine
+        }
+    )
+
+    $createBackupNow.Add_Click({
+        try {
+            & $showLoading
+            & $setStatus "Creating backup..."
+            [Windows.Forms.Application]::DoEvents() 2>$null
+            $profileName = & $getProfile
+            $allTweaks = Get-ApexPulseTweaks
+            $tweaks = $allTweaks | Where-Object { $_.Profiles -contains $profileName }
+            $admin = Test-ApexPulseAdmin
+            if (-not $admin) {
+                & $hideLoading
+                & $setStatus "Backup requires Administrator."
+                & $showNotify "Backup requires Administrator" "error"
+                return
+            }
+            $backupPath = New-ApexPulseBackup -Tweaks $tweaks -SelectedProfile $profileName
+            & $loadBackups
+            & $hideLoading
+            & $setLastRun
+            & $setStatus "Backup created."
+            & $showNotify "Backup created: $(Split-Path $backupPath -Leaf)" "success"
         } catch {
-            $backupDetailBox.Text = "Restore failed: $($_.Exception.Message)"
+            & $hideLoading
+            & $setStatus "Backup failed."
+            & $showNotify $_.Exception.Message "error"
         }
     })
 
+    # --- Reports ---
+    $reportDirLabel.Text = "Reports: $($script:ReportRoot)"
+
+    $loadReports = {
+        $items = @()
+        if (Test-Path -LiteralPath $script:ReportRoot) {
+            $items = @(
+                Get-ChildItem -LiteralPath $script:ReportRoot -File -ErrorAction SilentlyContinue |
+                    Where-Object { $_.Extension -in @(".html", ".json") } |
+                    Sort-Object LastWriteTime -Descending |
+                    ForEach-Object {
+                        [pscustomobject]@{
+                            DisplayName = $_.Name
+                            Created     = $_.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")
+                            Path        = $_.FullName
+                        }
+                    }
+            )
+        }
+        $reportsList.ItemsSource = $items
+    }
+
+    $refreshReports.Add_Click({ & $loadReports })
+
+    $reportsList.AddHandler(
+        [System.Windows.Controls.Primitives.ButtonBase]::ClickEvent,
+        [System.Windows.RoutedEventHandler]{
+            param($s, $e)
+            $btn = $e.OriginalSource
+            if (-not ($btn -is [System.Windows.Controls.Button])) { return }
+            if ($btn.Tag -ne "OpenRow") { return }
+            $entry = $btn.DataContext
+            if ($null -eq $entry) { return }
+            try {
+                Start-Process -FilePath $entry.Path
+                & $setStatus "Opened $($entry.DisplayName)"
+            } catch {
+                & $showNotify "Failed to open report: $($_.Exception.Message)" "error"
+            }
+        }
+    )
+
     # --- Init ---
-    $outputBox.Text = "Choose a profile and click Analyze PC."
+    $outputBox.Text = "Choose a profile and click Apply or Analyze (no changes)."
+    $statusText.Text = "Ready."
+    $window.Add_Loaded({ & $animateCardsIn })
     [void]$window.ShowDialog()
 }
 
