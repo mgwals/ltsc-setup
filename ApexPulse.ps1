@@ -760,11 +760,151 @@ function Repair-ApexPulseStoreInfrastructure {
 #region Optimization Tweaks
 # ---------------------------------------------------------------------------
 
+function Get-ApexPulseTweakReviewMetadata {
+    $metadata = @{}
+
+    $metadata["gaming.game-mode"] = [pscustomobject]@{
+        Risk = "Low"
+        Impact = @("Gaming")
+        Evidence = "WindowsFeature"
+        Compatibility = @("CurrentUser")
+        Recommendation = "Keep in Safe"
+    }
+    $metadata["capture.disable-gamedvr"] = [pscustomobject]@{
+        Risk = "Low"
+        Impact = @("Gaming", "BackgroundNoise")
+        Evidence = "WindowsFeature"
+        Compatibility = @("CurrentUser", "CaptureFeatures")
+        Recommendation = "Keep in Safe"
+    }
+    $metadata["power.high-performance"] = [pscustomobject]@{
+        Risk = "Medium"
+        Impact = @("Power", "Gaming")
+        Evidence = "WindowsFeature"
+        Compatibility = @("LaptopBattery")
+        Recommendation = "Keep with power tradeoff caveat"
+    }
+    $metadata["power.disable-throttling"] = [pscustomobject]@{
+        Risk = "Medium"
+        Impact = @("Power", "Gaming")
+        Evidence = "MicrosoftPolicy"
+        Compatibility = @("LaptopBattery")
+        Recommendation = "Keep in Safe for gaming rigs"
+    }
+    $metadata["multimedia.games-priority"] = [pscustomobject]@{
+        Risk = "Medium"
+        Impact = @("Latency")
+        Evidence = "CommunityTuning"
+        Compatibility = @("DriverDependent", "Reboot")
+        Recommendation = "Keep but improve detection"
+    }
+    $metadata["capture.fullscreen-exclusive"] = [pscustomobject]@{
+        Risk = "Low"
+        Impact = @("Latency")
+        Evidence = "WindowsFeature"
+        Compatibility = @("GameDependent", "CurrentUser")
+        Recommendation = "Keep with cautious wording"
+    }
+    $metadata["gaming.disable-overlay"] = [pscustomobject]@{
+        Risk = "Low"
+        Impact = @("Latency", "BackgroundNoise")
+        Evidence = "WindowsFeature"
+        Compatibility = @("CurrentUser", "GameBarFeatures")
+        Recommendation = "Keep in Safe"
+    }
+    $metadata["gpu.hags"] = [pscustomobject]@{
+        Risk = "Medium"
+        Impact = @("GPU", "Latency")
+        Evidence = "HardwareDependent"
+        Compatibility = @("DriverDependent", "Reboot")
+        Recommendation = "Consider optional advanced toggle"
+    }
+    $metadata["explorer.reduce-consumer-content"] = [pscustomobject]@{
+        Risk = "Low"
+        Impact = @("Privacy", "BackgroundNoise")
+        Evidence = "MicrosoftPolicy"
+        Compatibility = @("CurrentUser")
+        Recommendation = "Keep in Competitive"
+    }
+    $metadata["visual.reduce-effects"] = [pscustomobject]@{
+        Risk = "Low"
+        Impact = @("UX", "BackgroundNoise")
+        Evidence = "Convenience"
+        Compatibility = @("CurrentUser", "VisualPreferences")
+        Recommendation = "Consider optional Competitive toggle"
+    }
+    $metadata["notifications.suppress-toasts"] = [pscustomobject]@{
+        Risk = "Medium"
+        Impact = @("UX", "BackgroundNoise")
+        Evidence = "MicrosoftPolicy"
+        Compatibility = @("Notifications", "CurrentUser")
+        Recommendation = "Keep opt-in only"
+    }
+    $metadata["services.sysmain"] = [pscustomobject]@{
+        Risk = "High"
+        Impact = @("Services", "Storage")
+        Evidence = "CommunityTuning"
+        Compatibility = @("SearchPerformance", "SystemBehavior")
+        Recommendation = "Move to Advanced or legacy HDD toggle"
+    }
+    $metadata["services.wsearch"] = [pscustomobject]@{
+        Risk = "High"
+        Impact = @("Services", "BackgroundNoise")
+        Evidence = "CommunityTuning"
+        Compatibility = @("Search", "StartMenu")
+        Recommendation = "Move to Advanced or optional toggle"
+    }
+    $metadata["services.diagtrack"] = [pscustomobject]@{
+        Risk = "Medium"
+        Impact = @("Privacy", "Services")
+        Evidence = "PrivacyPolicy"
+        Compatibility = @("Diagnostics")
+        Recommendation = "Keep as privacy/advanced choice"
+    }
+    $metadata["privacy.tailored-experiences"] = [pscustomobject]@{
+        Risk = "Low"
+        Impact = @("Privacy")
+        Evidence = "MicrosoftPolicy"
+        Compatibility = @("CurrentUser")
+        Recommendation = "Keep"
+    }
+    $metadata["privacy.diagnostic-data"] = [pscustomobject]@{
+        Risk = "Medium"
+        Impact = @("Privacy")
+        Evidence = "MicrosoftPolicy"
+        Compatibility = @("WindowsEdition")
+        Recommendation = "Keep with edition caveat"
+    }
+    $metadata["privacy.cortana-search"] = [pscustomobject]@{
+        Risk = "Medium"
+        Impact = @("Privacy", "Search")
+        Evidence = "MicrosoftPolicy"
+        Compatibility = @("Search", "StartMenu")
+        Recommendation = "Keep as privacy/noise toggle"
+    }
+    $metadata["privacy.location-tracking"] = [pscustomobject]@{
+        Risk = "Medium"
+        Impact = @("Privacy")
+        Evidence = "MicrosoftPolicy"
+        Compatibility = @("LocationApps")
+        Recommendation = "Keep opt-in only"
+    }
+    $metadata["privacy.activity-history"] = [pscustomobject]@{
+        Risk = "Low"
+        Impact = @("Privacy")
+        Evidence = "MicrosoftPolicy"
+        Compatibility = @("TimelineFeatures")
+        Recommendation = "Keep"
+    }
+
+    return $metadata
+}
+
 function Get-ApexPulseTweaks {
     $safeProfile = "Safe"
     $competitiveProfile = "Competitive"
 
-    @(
+    $tweaks = @(
         # ----- Gaming Features -----
         [pscustomobject]@{
             Id = "gaming.game-mode"
@@ -1252,6 +1392,26 @@ function Get-ApexPulseTweaks {
             }
         }
     )
+
+    $metadata = Get-ApexPulseTweakReviewMetadata
+    foreach ($tweak in $tweaks) {
+        if ($metadata.ContainsKey($tweak.Id)) {
+            $review = $metadata[$tweak.Id]
+            $tweak | Add-Member -MemberType NoteProperty -Name Risk -Value $review.Risk -Force
+            $tweak | Add-Member -MemberType NoteProperty -Name Impact -Value $review.Impact -Force
+            $tweak | Add-Member -MemberType NoteProperty -Name Evidence -Value $review.Evidence -Force
+            $tweak | Add-Member -MemberType NoteProperty -Name Compatibility -Value $review.Compatibility -Force
+            $tweak | Add-Member -MemberType NoteProperty -Name Recommendation -Value $review.Recommendation -Force
+        } else {
+            $tweak | Add-Member -MemberType NoteProperty -Name Risk -Value "Unreviewed" -Force
+            $tweak | Add-Member -MemberType NoteProperty -Name Impact -Value @() -Force
+            $tweak | Add-Member -MemberType NoteProperty -Name Evidence -Value "Unreviewed" -Force
+            $tweak | Add-Member -MemberType NoteProperty -Name Compatibility -Value @() -Force
+            $tweak | Add-Member -MemberType NoteProperty -Name Recommendation -Value "Review before release" -Force
+        }
+    }
+
+    return $tweaks
 }
 
 function Get-ApexPulsePrivacyTweakIds {
@@ -1458,6 +1618,11 @@ function Invoke-ApexPulseProfile {
                     Status = "NeedsAdmin"
                     Detail = "Run as administrator to inspect or apply this optimization."
                     RebootRequired = $tweak.RebootRequired
+                    Risk = $tweak.Risk
+                    Impact = $tweak.Impact
+                    Evidence = $tweak.Evidence
+                    Compatibility = $tweak.Compatibility
+                    Recommendation = $tweak.Recommendation
                 }
                 continue
             }
@@ -1472,6 +1637,11 @@ function Invoke-ApexPulseProfile {
                     Status = $plannedStatus
                     Detail = $detail
                     RebootRequired = $tweak.RebootRequired
+                    Risk = $tweak.Risk
+                    Impact = $tweak.Impact
+                    Evidence = $tweak.Evidence
+                    Compatibility = $tweak.Compatibility
+                    Recommendation = $tweak.Recommendation
                 }
                 continue
             }
@@ -1485,6 +1655,11 @@ function Invoke-ApexPulseProfile {
                     Status = "Applied"
                     Detail = $detail
                     RebootRequired = $tweak.RebootRequired
+                    Risk = $tweak.Risk
+                    Impact = $tweak.Impact
+                    Evidence = $tweak.Evidence
+                    Compatibility = $tweak.Compatibility
+                    Recommendation = $tweak.Recommendation
                 }
             }
         } catch {
@@ -1495,6 +1670,11 @@ function Invoke-ApexPulseProfile {
                 Status = "Failed"
                 Detail = $_.Exception.Message
                 RebootRequired = $tweak.RebootRequired
+                Risk = $tweak.Risk
+                Impact = $tweak.Impact
+                Evidence = $tweak.Evidence
+                Compatibility = $tweak.Compatibility
+                Recommendation = $tweak.Recommendation
             }
         }
     }
@@ -1561,7 +1741,13 @@ function New-ApexPulseHtmlReport {
         $escapedDetail = [System.Net.WebUtility]::HtmlEncode($item.Detail)
         $escapedName = [System.Net.WebUtility]::HtmlEncode($item.Name)
         $escapedGroup = [System.Net.WebUtility]::HtmlEncode($item.Group)
-        $rows += "<tr><td class=`"$statusClass`">$($item.Status)</td><td>$escapedName</td><td>$escapedGroup</td><td>$escapedDetail</td><td>$reboot</td></tr>`n"
+        $risk = if ($item.PSObject.Properties.Name -contains "Risk") { $item.Risk } else { "" }
+        $evidence = if ($item.PSObject.Properties.Name -contains "Evidence") { $item.Evidence } else { "" }
+        $recommendation = if ($item.PSObject.Properties.Name -contains "Recommendation") { $item.Recommendation } else { "" }
+        $escapedRisk = [System.Net.WebUtility]::HtmlEncode($risk)
+        $escapedEvidence = [System.Net.WebUtility]::HtmlEncode($evidence)
+        $escapedRecommendation = [System.Net.WebUtility]::HtmlEncode($recommendation)
+        $rows += "<tr><td class=`"$statusClass`">$($item.Status)</td><td>$escapedName</td><td>$escapedGroup</td><td>$escapedRisk</td><td>$escapedEvidence</td><td>$escapedDetail</td><td>$escapedRecommendation</td><td>$reboot</td></tr>`n"
     }
 
     $backupLine = if ($Report.BackupPath) { "<p><strong>Backup:</strong> $([System.Net.WebUtility]::HtmlEncode($Report.BackupPath))</p>" } else { "" }
@@ -1609,7 +1795,7 @@ function New-ApexPulseHtmlReport {
   $rebootLine
 </div>
 <table>
-  <thead><tr><th>Status</th><th>Name</th><th>Group</th><th>Detail</th><th>Reboot</th></tr></thead>
+  <thead><tr><th>Status</th><th>Name</th><th>Group</th><th>Risk</th><th>Evidence</th><th>Detail</th><th>Recommendation</th><th>Reboot</th></tr></thead>
   <tbody>
 $rows  </tbody>
 </table>
@@ -2971,7 +3157,8 @@ function Show-ApexPulseUi {
         if ($report.BackupPath) { $lines += "Backup: $($report.BackupPath)" }
         $lines += ""
         foreach ($item in $report.Results) {
-            $lines += "[{0}] {1} :: {2}" -f $item.Status, $item.Name, $item.Detail
+            $riskText = if ($item.PSObject.Properties.Name -contains "Risk") { " | Risk: $($item.Risk)" } else { "" }
+            $lines += "[{0}] {1}{2} :: {3}" -f $item.Status, $item.Name, $riskText, $item.Detail
         }
         if ($report.RebootRequired) {
             $lines += ""
@@ -3121,15 +3308,15 @@ function Show-ApexPulseUi {
                 try {
                     if ($tweak.RequiresAdmin -and -not $admin) {
                         $lines += "[NeedsAdmin] $($tweak.Name) - Requires elevation."
-                        $privResults += [pscustomobject]@{ Id = $tweak.Id; Name = $tweak.Name; Group = $tweak.Group; Status = "NeedsAdmin"; Detail = "Requires elevation."; RebootRequired = $false }
+                        $privResults += [pscustomobject]@{ Id = $tweak.Id; Name = $tweak.Name; Group = $tweak.Group; Status = "NeedsAdmin"; Detail = "Requires elevation."; RebootRequired = $false; Risk = $tweak.Risk; Impact = $tweak.Impact; Evidence = $tweak.Evidence; Compatibility = $tweak.Compatibility; Recommendation = $tweak.Recommendation }
                         continue
                     }
                     $detail = & $tweak.Apply
                     $lines += "[Applied] $($tweak.Name) - $detail"
-                    $privResults += [pscustomobject]@{ Id = $tweak.Id; Name = $tweak.Name; Group = $tweak.Group; Status = "Applied"; Detail = $detail; RebootRequired = $false }
+                    $privResults += [pscustomobject]@{ Id = $tweak.Id; Name = $tweak.Name; Group = $tweak.Group; Status = "Applied"; Detail = $detail; RebootRequired = $false; Risk = $tweak.Risk; Impact = $tweak.Impact; Evidence = $tweak.Evidence; Compatibility = $tweak.Compatibility; Recommendation = $tweak.Recommendation }
                 } catch {
                     $lines += "[Failed] $($tweak.Name) - $($_.Exception.Message)"
-                    $privResults += [pscustomobject]@{ Id = $tweak.Id; Name = $tweak.Name; Group = $tweak.Group; Status = "Failed"; Detail = $_.Exception.Message; RebootRequired = $false }
+                    $privResults += [pscustomobject]@{ Id = $tweak.Id; Name = $tweak.Name; Group = $tweak.Group; Status = "Failed"; Detail = $_.Exception.Message; RebootRequired = $false; Risk = $tweak.Risk; Impact = $tweak.Impact; Evidence = $tweak.Evidence; Compatibility = $tweak.Compatibility; Recommendation = $tweak.Recommendation }
                 }
             }
 
