@@ -22,6 +22,8 @@
 ApexPulse 11 is a PowerShell/WPF optimizer for Windows 11 gaming PCs. It ships two curated profiles, an integrated privacy shield, full registry backup with one-click rollback, and timestamped HTML reports — all behind a modern dark-themed UI.
 
 > Formerly **Win11 GameBoost** / **ltsc-setup**. Same repo, new identity.
+>
+> Maintainer note: see [`docs/backend-tweak-review.md`](docs/backend-tweak-review.md) for the backend flow, tweak-by-tweak review, and Safe vs Competitive profile recommendations.
 
 ---
 
@@ -123,7 +125,7 @@ The Privacy Shield is integrated into the Competitive profile and also available
 |---------|:--------------:|--------|
 | Tailored experiences | No | Disables diagnostic-data-based personalization. |
 | Diagnostic data upload | Yes | Reduces telemetry to security-only level. |
-| Cortana & cloud search | No | Disables Bing results in Start Menu and Cortana consent. |
+| Cortana & cloud search | Yes | Disables Bing results in Start Menu and Cortana consent. |
 | Location tracking | Yes | Denies location access system-wide and per-user. |
 | Activity history | Yes | Disables activity feed collection and upload. |
 
