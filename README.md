@@ -27,13 +27,9 @@ ApexPulse 11 is a PowerShell/WPF optimizer for Windows 11 gaming PCs. It ships t
 
 ## Screenshots
 
-<!-- Replace the placeholders below with actual screenshots or GIFs of the WPF UI. -->
-
 | Dashboard | Privacy Shield | Rollback Center |
 |:---------:|:--------------:|:---------------:|
 | ![Dashboard](docs/screenshots/dashboard.png) | ![Privacy Shield](docs/screenshots/privacy-shield.png) | ![Rollback Center](docs/screenshots/rollback-center.png) |
-
-> **Note:** Screenshots coming soon. Launch `.\ApexPulse.ps1` to see the live UI.
 
 ---
 
